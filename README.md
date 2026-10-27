@@ -19,7 +19,7 @@ La API key nunca llega al navegador. Las chicas, los chats y el perfil se guarda
 | `ORIGEN` | Variable (opcional) | Desde dónde se abre la app. Por defecto `https://nicoc2611.github.io` |
 | `MODELO`, `MODELO_RAPIDO` | Variables (opcionales) | Para cambiar de modelo. Por defecto `claude-sonnet-5-5` y `claude-haiku-5-5` |
 
-La dirección del Worker va en la constante `SERVIDOR` de `index.html`.
+La dirección del Worker (`https://chamuyia.nicoc2611.workers.dev`) va en la constante `SERVIDOR` de `index.html`.
 
 ## Copias
 

@@ -1,0 +1,2869 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ChamuyIA</title>
+<meta name="description" content="Tu fichero de chamuyo">
+<meta name="theme-color" content="#E7E3DA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ChamuyIA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&display=swap">
+<style>
+/* Layout: una columna estilo suizo; fondo hueso cálido, tipografía grotesca, números grandes y tarjetas apiladas en negro, bordó, coral y tonos tierra */
+:root{
+  color-scheme:light;
+  --noche:#1D1818;
+  --bg:#E7E3DA;
+  --surface:#F4F1EB;
+  --raised:#FFFFFF;
+  --ink:#1D1818;
+  --muted:#6F6862;
+  --line:#D2CCC1;
+  --tinto:#82231F;
+  --coral:#C84D4A;
+  --rubor:#E2A49C;
+  --hueso:#F4F1EB;
+  --arena:#D8C9A7;
+  --piedra:#B9B3AA;
+  --blanco:#FBFAF7;
+  --gris:#5B5450;
+  --rojo:#C84D4A;
+  --on:#1D1818;
+  --fill:#1D1818;
+  --on-fill:#F4F1EB;
+  --grad:linear-gradient(120deg,#C84D4A 0%,#C84D4A 100%);
+  --grad-text:linear-gradient(120deg,#C84D4A 0%,#82231F 100%);
+  --t-picante:var(--coral);
+  --t-absurdo:var(--arena);
+  --t-cita:var(--rubor);
+  --t-profundo:var(--piedra);
+  --focus:#82231F;
+  --shadow:0 6px 18px rgba(60,40,30,.10);
+  --f-display:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-body:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --r-xl:24px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --spring:cubic-bezier(.3,1.5,.5,1);
+}
+
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Movimiento */
+@keyframes viewIn{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes popIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes likePop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes heartFly{from{transform:translate(-50%,-50%) scale(.5);opacity:1}to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.15) rotate(var(--rot));opacity:0}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes tabBounce{0%{transform:scale(1)}40%{transform:scale(1.22) translateY(-2px)}100%{transform:scale(1)}}
+@keyframes shimmer{to{transform:translateX(100%)}}
+@keyframes ffIn{from{transform:translateY(80px) rotate(-1.5deg);opacity:0}to{transform:none;opacity:1}}
+.view{animation:viewIn .22s var(--ease) both}
+.stagger>*{animation:popIn .3s var(--ease) both}
+.stagger>*:nth-child(2){animation-delay:.04s}
+.stagger>*:nth-child(3){animation-delay:.08s}
+.stagger>*:nth-child(4){animation-delay:.12s}
+.stagger>*:nth-child(5){animation-delay:.16s}
+.stagger>*:nth-child(6){animation-delay:.2s}
+.stagger>*:nth-child(7){animation-delay:.24s}
+.stagger>*:nth-child(n+8){animation-delay:.28s}
+.burst{position:fixed;z-index:50;pointer-events:none;width:0;height:0}
+.burst i{position:absolute;left:0;top:0;font-style:normal;font-size:15px;color:var(--rojo);animation:heartFly .8s var(--ease) forwards}
+
+/* Apertura */
+.splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;animation:splashOut .25s ease .85s forwards}
+.splash-circles{display:flex;align-items:center}
+.splash-circles i{width:96px;height:96px;border-radius:50%;background:var(--coral);margin-left:-22px;transform:scale(0);animation:circleIn .4s var(--spring) forwards}
+.splash-circles i:first-child{margin-left:0;animation-delay:.02s}
+.splash-circles i:nth-child(2){animation-delay:.1s;background:var(--tinto)}
+.splash-circles i:nth-child(3){animation-delay:.18s;background:var(--noche)}
+@keyframes circleIn{to{transform:scale(1)}}
+.splash-word{margin:0;font-family:var(--f-display);font-weight:700;font-size:48px;letter-spacing:-.045em;line-height:1;opacity:0;animation:wordIn .35s ease .25s forwards}
+.splash-word span,.brand span{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.splash-tag{margin:-14px 0 0;color:var(--muted);font-size:14px;opacity:0;animation:wordIn .35s ease .35s forwards}
+@keyframes wordIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes splashOut{to{opacity:0;visibility:hidden}}
+
+/* Estructura */
+.app{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(112px + env(safe-area-inset-bottom,0px))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:8px;padding-block:14px 10px;margin-inline:-16px;padding-inline:16px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1;letter-spacing:-.045em;margin:0}
+.pantalla{position:fixed;inset:0;z-index:60;background:var(--bg);overflow-y:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px))}
+.pantalla-in{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:16px;animation:viewIn .3s var(--ease) both}
+.pantalla .view-title{font-size:44px}
+.ob-progreso{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ob-progreso i{height:4px;border-radius:4px;background:var(--line);transition:background-color .3s}
+.ob-progreso i.on{background:var(--coral)}
+.ob-paso{display:flex;flex-direction:column;gap:16px}
+.ob-paso[hidden]{display:none}
+.ob-nav{display:flex;gap:10px}
+.ob-nav .btn{flex:1}
+.ob-estilo{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+#ob-campos{display:flex;flex-direction:column;gap:12px}
+.cuenta{position:relative}
+@keyframes menuIn{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+.menu{position:absolute;right:0;top:calc(100% + 8px);width:260px;max-width:calc(100vw - 32px);box-sizing:border-box;background:var(--raised);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:6px;display:flex;flex-direction:column;z-index:20;transform-origin:top right;animation:menuIn .16s var(--ease) both}
+.menu[hidden],.menu-aviso[hidden]{display:none}
+.menu-cab{display:flex;flex-direction:column;gap:2px;padding:10px 12px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.menu-cab b{font-size:15px}
+.menu-cab span{font-size:12.5px;color:var(--muted)}
+.menu button{appearance:none;border:0;background:none;text-align:left;padding:11px 12px;border-radius:12px;font:inherit;font-size:14.5px;color:var(--ink);cursor:pointer}
+.menu button:hover,.menu button:focus-visible{background:var(--surface);outline:none}
+.menu .menu-salir{color:var(--tinto);font-weight:600}
+.menu-aviso{display:flex;flex-direction:column;gap:8px;margin:2px 4px 6px;padding:12px;border-radius:14px;background:var(--surface);font-size:13.5px}
+.menu-aviso p{margin:0}
+.menu-aviso .btn{align-self:flex-start;text-decoration:none}
+.me{appearance:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--noche);color:var(--hueso);font-family:var(--f-display);font-weight:700;font-size:18px;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:none}
+.banner{margin:0 0 12px;padding:11px 14px;border-radius:16px;background:color-mix(in srgb,var(--coral) 16%,var(--raised));color:var(--ink);font-size:14px}
+
+.view{display:flex;flex-direction:column;gap:18px;padding-top:6px}
+.intro{display:flex;flex-direction:column;gap:6px}
+.view-title{font-family:var(--f-display);font-weight:700;font-size:36px;line-height:1;letter-spacing:-.045em;margin:0;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:60ch}
+.h2{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1.1;letter-spacing:-.035em;margin:0}
+.field{display:flex;flex-direction:column;gap:8px}
+.label{font-size:12px;font-weight:500;letter-spacing:.01em;color:var(--muted)}
+.fine{font-size:13px;color:var(--muted);margin:0}
+.error{margin:0;padding:11px 14px;border-radius:16px;background:color-mix(in srgb,var(--coral) 16%,var(--raised));color:var(--ink);font-size:14px;animation:popIn .35s var(--ease)}
+
+input[type=text],select,textarea{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:12px 14px;width:100%;box-sizing:border-box;min-width:0;transition:border-color .2s,box-shadow .2s}
+input[type=text]:focus,select:focus,textarea:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(200,77,74,.16);outline:none}
+textarea{resize:vertical;min-height:48px;line-height:1.45}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 15px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:38px}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.85}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.row>*{flex:1 1 150px;min-width:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--raised);border-radius:999px;padding:9px 15px;font-size:14px;font-weight:500;cursor:pointer;line-height:1.2}
+.chip[aria-pressed="true"]{background:var(--noche);color:var(--hueso);border-color:var(--noche);font-weight:600}
+.chip .n{opacity:.65;margin-left:5px;font-variant-numeric:tabular-nums}
+
+.drop{position:relative;border:1.5px dashed var(--piedra);border-radius:22px;background:var(--surface);padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:border-color .2s,background-color .2s}
+.drop.over{border-color:var(--coral);background:color-mix(in srgb,var(--coral) 12%,var(--surface))}
+.drop.off{opacity:.55}
+.drop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.thumb{position:relative;width:70px;height:96px;border-radius:12px;overflow:hidden;background:var(--raised);animation:popIn .35s var(--ease)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(29,24,24,.78);color:#F4F1EB;font-size:15px;line-height:24px;padding:0;cursor:pointer}
+
+.btn{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--raised);color:var(--ink);border-radius:16px;padding:11px 16px;font-weight:600;cursor:pointer;line-height:1.2}
+.btn.primary{background:var(--coral);border-color:var(--coral);color:#FFF7F4;box-shadow:0 8px 20px rgba(200,77,74,.25)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.big{width:100%;padding:17px 18px;font-size:17px;border-radius:999px;font-family:var(--f-display);font-weight:600;letter-spacing:-.01em}
+.btn.small{padding:8px 13px;font-size:14px;border-radius:12px}
+.btn.ghost{background:transparent}
+.btn.on{background:var(--noche);border-color:var(--noche);color:var(--hueso)}
+.btn.danger{color:var(--tinto);border-color:transparent;background:transparent}
+.btn:disabled{opacity:.45;cursor:default}
+.btn,.chip,.icon-btn,.seg-b,.tab,.me{transition:transform .15s var(--ease),background-color .2s,color .2s,box-shadow .2s,filter .2s}
+.btn:not(:disabled):active,.chip:active,.icon-btn:active,.seg-b:active,.me:active{transform:scale(.95)}
+.go{display:flex;flex-direction:column;gap:8px}
+.linkish{appearance:none;border:0;background:none;padding:0;color:var(--tinto);font-weight:600;cursor:pointer;align-self:flex-start}
+.icon-btn{appearance:none;width:38px;height:38px;display:inline-grid;place-items:center;border:1px solid var(--line);background:var(--raised);color:var(--muted);border-radius:50%;cursor:pointer;padding:0;flex:none}
+.icon-btn svg{width:19px;height:19px}
+.icon-btn[aria-pressed="true"]{color:var(--coral);background:var(--noche);border-color:var(--noche)}
+.icon-btn[aria-pressed="true"] svg{fill:currentColor}
+.icon-btn.pop{animation:likePop .45s var(--spring)}
+.x{appearance:none;border:0;background:none;color:var(--muted);font-size:18px;line-height:1;padding:4px 6px;cursor:pointer;flex:none}
+
+/* Tarjetas: cada color trae su texto (--on) y su relleno de contraste (--fill) */
+.folder{--c:var(--surface);position:relative;background:var(--c);border-radius:var(--r-xl)}
+.c-coral{--c:var(--coral);--on:#FFF7F4;--fill:#1D1818;--on-fill:#FFF7F4}
+.c-tinto{--c:var(--tinto);--on:#F4EDE9;--fill:#F4EDE9;--on-fill:#82231F}
+.c-noche{--c:var(--noche);--on:#F4F1EB;--fill:#F4F1EB;--on-fill:#1D1818}
+.c-gris{--c:var(--gris);--on:#F4F1EB;--fill:#F4F1EB;--on-fill:#5B5450}
+.c-hueso{--c:var(--hueso)}
+.c-blanco{--c:var(--blanco)}
+.c-rubor{--c:var(--rubor)}
+.c-arena{--c:var(--arena)}
+.c-piedra{--c:var(--piedra)}
+.pastel{color:var(--on)}
+.pastel .label,.pastel .fine,.pastel dt{color:color-mix(in srgb,var(--on) 70%,transparent)}
+.pastel .btn{background:var(--fill);color:var(--on-fill);border-color:var(--fill);box-shadow:none}
+.pastel .btn.on{background:transparent;color:var(--on);border-color:var(--on)}
+.pastel .icon-btn{background:color-mix(in srgb,var(--on) 12%,transparent);border-color:transparent;color:var(--on)}
+.pastel .icon-btn[aria-pressed="true"]{background:var(--fill);color:var(--rojo)}
+.pastel .cap{background:color-mix(in srgb,var(--on) 11%,transparent)}
+.pastel input[type=text],.pastel select{background:color-mix(in srgb,var(--on) 11%,transparent);color:var(--on)}
+
+.card{background:var(--raised);border-radius:22px;padding:14px 16px;box-shadow:var(--shadow)}
+.result{display:flex;flex-direction:column;gap:14px}
+.lectura p{margin:4px 0 0}
+.trans summary{cursor:pointer;font-weight:600;font-size:14px}
+.bar .tono{color:var(--ink)}
+.chat{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin-top:10px}
+.chat .bubble{font-size:14px}
+.chat-note{margin:4px 0;align-self:stretch;font-size:13px;color:var(--muted)}
+
+/* Opciones: cada una es una carpeta del color de su tono */
+.var{--t:var(--muted);--c:var(--t);padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.var header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tono{--t:var(--muted);font-size:12px;font-weight:600;letter-spacing:.01em;color:var(--t);display:inline-flex;align-items:center;gap:7px}
+.tono::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--t)}
+.var .tono{color:var(--on)}
+.var .tono::before{background:var(--on)}
+.t-picante{--t:var(--t-picante)}
+.t-absurdo{--t:var(--t-absurdo)}
+.t-cita{--t:var(--t-cita)}
+.t-profundo{--t:var(--t-profundo)}
+.t-propia{--t:var(--blanco)}
+.var.t-picante{--on:#FFF7F4;--fill:#1D1818;--on-fill:#FFF7F4}
+.badge{font-size:12px;font-weight:600;color:var(--on-fill);background:var(--fill);padding:4px 10px;border-radius:999px}
+.bubbles{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.bubble{margin:0;max-width:86%;background:var(--coral);color:#FFF7F4;padding:9px 14px;border-radius:20px 20px 6px 20px;font-size:15.5px;line-height:1.35;overflow-wrap:anywhere;-webkit-user-select:text;user-select:text}
+.pastel .bubble{background:var(--fill);color:var(--on-fill)}
+.bubble.her{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:20px 20px 20px 6px;align-self:flex-start}
+.var-actions{display:flex;justify-content:flex-end;gap:8px;align-items:center}
+.var.usada .var-actions::before{content:"Usada";font-size:12px;font-weight:700;opacity:.65;margin-right:auto}
+.var.rechazada{opacity:.5}
+.var.rechazada .var-actions::before{content:"No te gustó";font-size:12px;font-weight:700;opacity:.75;margin-right:auto}
+.porque{margin:0;color:var(--muted);font-size:14px}
+.fb{display:flex;flex-direction:column;gap:10px;border:1.5px dashed var(--line);animation:popIn .35s var(--ease)}
+
+.thinking{display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
+.thinking::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(200,77,74,.10) 50%,transparent 70%);transform:translateX(-100%);animation:shimmer 1.6s infinite;pointer-events:none}
+.typing{background:var(--surface);border-radius:20px 20px 20px 6px;padding:12px 14px;flex:none}
+.dots{display:inline-flex;gap:5px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--coral);animation:dot 1.2s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}
+.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.th-txt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.th-txt strong{font-weight:600}
+
+.pend{display:flex;flex-direction:column;gap:8px}
+.pend-item{background:var(--raised);box-shadow:var(--shadow);border-radius:18px;padding:11px 13px;display:flex;flex-direction:column;gap:8px}
+.pend-meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.pend-meta strong{color:var(--ink);font-weight:600}
+.pend-msg{margin:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.res-btns{display:flex;gap:6px;flex-wrap:wrap}
+.res-btns .chip{padding:6px 11px;font-size:13px}
+
+/* Fichero: números y tipo */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.kpi{color:var(--on);padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;min-height:124px;box-shadow:var(--shadow)}
+.kpi .ic,.trow .ic{width:34px;height:34px;border-radius:50%;background:var(--fill);display:grid;place-items:center;flex:none}
+.kpi .ic{color:var(--c)}
+.kpi .ic svg,.trow .ic svg{width:19px;height:19px}
+.kpi b{font-family:var(--f-display);font-weight:400;font-size:38px;line-height:1;letter-spacing:-.05em;font-variant-numeric:tabular-nums;margin-top:auto}
+.kpi span:last-child{font-size:13px;font-weight:500;opacity:.8}
+.stack{position:relative;padding-top:24px}
+.stack .back{position:absolute;margin:0;height:90px}
+.stack .b2{top:0;left:28px;right:28px}
+.stack .b1{top:12px;left:14px;right:14px}
+.stack .front{position:relative;z-index:1;box-shadow:0 -4px 14px rgba(29,24,24,.18)}
+.tipo{padding:16px 16px 8px}
+.tipo-name{font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1;letter-spacing:-.045em;margin:4px 0;text-wrap:balance}
+.tipo-desc{margin:8px 0 0;font-size:14px}
+.tipo-rows{display:flex;flex-direction:column;margin-top:12px}
+.trow{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid color-mix(in srgb,var(--on) 20%,transparent)}
+.trow .ic{color:var(--t)}
+.trow-txt{display:flex;flex-direction:column;min-width:0}
+.trow-txt b{font-weight:700}
+.trow-txt span{font-size:12px;opacity:.72}
+.trow strong{font-family:var(--f-display);font-weight:400;font-size:24px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+/* Torta del tipo: disco oscuro grande, porciones por tono y el número grande abajo */
+.torta{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.torta svg{width:min(82%,270px);height:auto;display:block;margin:2px auto 0;overflow:visible}
+.slice{fill:none}
+.torta.anima svg{animation:tortaIn .6s var(--ease) both}
+.torta.anima .slice{animation:slice .6s var(--ease) both;animation-delay:calc(.1s + var(--k) * .08s)}
+@keyframes tortaIn{from{transform:rotate(-50deg) scale(.82);opacity:0}to{transform:none;opacity:1}}
+@keyframes slice{from{stroke-dasharray:0 var(--C)}}
+.torta-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;border-top:1px solid color-mix(in srgb,var(--on) 25%,transparent);padding-top:6px;margin-top:8px}
+.torta-k{font-size:13px;font-weight:600;opacity:.8;padding-bottom:9px}
+.torta-n{font-family:var(--f-display);font-weight:400;font-size:76px;line-height:.85;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.torta-n small{font-size:30px;letter-spacing:0;margin-left:2px}
+.file-name{font-family:var(--f-display);font-weight:700;font-size:20px;line-height:1.1;letter-spacing:-.015em;overflow-wrap:anywhere}
+.file-sub{font-size:13px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.estado{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--fill);color:var(--on-fill)}
+.li-when{display:inline-flex;align-items:center;gap:6px}
+.dot-pend{width:9px;height:9px;border-radius:50%;background:var(--rojo);box-shadow:0 0 0 2px var(--fill)}
+.empty{display:flex;flex-direction:column;align-items:flex-start;gap:8px;background:var(--raised);box-shadow:var(--shadow);border-radius:22px;padding:18px}
+.empty p{margin:0}
+
+/* Fichero: orden, filtros y cajón */
+.ff-tools{display:flex;flex-direction:column;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:#DDD8CE;border-radius:999px;padding:4px;gap:4px}
+.seg-b{appearance:none;border:0;background:none;color:var(--muted);font-weight:600;font-size:13px;padding:8px 6px;border-radius:999px;cursor:pointer}
+.seg-b[aria-pressed="true"]{background:var(--raised);color:var(--ink);box-shadow:0 1px 4px rgba(29,24,24,.12)}
+.ff-filtros{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.ff-filtros::-webkit-scrollbar{display:none}
+.ff-filtros .chip{flex:none}
+.drawer{position:relative}
+.ff-stack{display:flex;flex-direction:column}
+.ff{position:relative;height:240px;background:var(--c);color:var(--on);border-radius:24px;box-shadow:0 -6px 16px rgba(29,24,24,.14);transition:margin .28s var(--ease),transform .28s var(--ease)}
+.ff + .ff{margin-top:-150px}
+.ff.open{transform:translateY(-3px)}
+.ff.open + .ff{margin-top:-12px}
+.ff.open:last-child{margin-bottom:0}
+.ff-dot{width:8px;height:8px;border-radius:50%;background:var(--on);flex:none}
+.ff-hit{appearance:none;border:0;background:none;padding:0;position:absolute;inset:0;z-index:1;cursor:pointer;border-radius:24px}
+.ff.open .ff-hit{bottom:auto;height:84px}
+.ff-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:end;padding:12px 16px 0;height:84px;box-sizing:border-box}
+.ff-strip .ic{grid-column:1/3;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.92);color:#1D1818;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:13px;margin-bottom:6px;align-self:start}
+.ff-k{grid-column:1/3;font-size:11.5px;font-weight:500;opacity:.78;display:flex;align-items:center;gap:6px}
+.ff-name{font-family:var(--f-display);font-weight:600;font-size:18px;line-height:1.2;letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ff-when{font-family:var(--f-display);font-size:16px;font-weight:400;letter-spacing:-.02em;white-space:nowrap}
+.ff-last{margin:0;font-size:14px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ff-body{padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;opacity:0;transform:translateY(-6px);transition:opacity .3s,transform .3s}
+.ff.open .ff-body{opacity:1;transform:none}
+.ff-meta{display:flex;gap:6px;flex-wrap:wrap}
+.ff-res{margin:0;font-size:13px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ff .btn{align-self:flex-start;position:relative;z-index:2;background:var(--fill);color:var(--on-fill);border-color:var(--fill);box-shadow:none}
+.ff:hover:not(.open){transform:translateY(-3px)}
+.drawer.entrando .ff{animation:ffIn .4s var(--ease) both;animation-delay:calc(var(--i) * 40ms)}
+
+.detail{display:flex;flex-direction:column;gap:18px}
+.back{appearance:none;border:0;background:none;padding:0;color:var(--muted);font-weight:600;cursor:pointer;align-self:flex-start}
+.d-head{display:flex;gap:14px;align-items:center;padding:16px;box-shadow:var(--shadow)}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;background:var(--fill);color:var(--on-fill)}
+.avatar.big{width:58px;height:58px;font-size:26px;flex:none}
+.d-id{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.d-id input[type=text]{font-family:var(--f-display);font-weight:700;font-size:24px;padding:6px 10px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-row .btn{flex:1 1 150px}
+.resumen{margin:0;white-space:pre-line}
+.timeline{display:flex;flex-direction:column;gap:10px}
+.tl{background:var(--raised);box-shadow:var(--shadow);border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.tl-meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.tl summary{cursor:pointer;font-size:14px;color:var(--muted)}
+.tl-opts{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.tl-opt{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.tl-opt p{margin:0;font-size:14px;min-width:0}
+
+.planes,.ideas{display:flex;flex-direction:column;gap:12px}
+.plan,.idea{display:flex;flex-direction:column;gap:9px;padding:16px;box-shadow:var(--shadow)}
+.plan-t,.idea-t{font-family:var(--f-display);font-weight:700;font-size:22px;line-height:1.1;letter-spacing:-.04em;margin:0}
+.plan p,.idea p{margin:0}
+.plan-dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.plan-dl div{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px}
+.plan-dl dt{font-size:12px;font-weight:600;padding-top:2px}
+.plan-dl dd{margin:0;font-size:14px}
+.lugares{display:flex;flex-direction:column;gap:10px}
+.lugar{display:flex;flex-direction:column;gap:3px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--on) 18%,transparent)}
+.lugar-n{margin:0;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.lugar-m{margin:0;font-size:13px;opacity:.75}
+.lugar-d{margin:0;font-size:14px}
+.lugar-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}
+.lugar-links .btn{text-decoration:none}
+.lugar-f{color:inherit;font-size:13px;font-weight:600}
+
+.block{display:flex;flex-direction:column;gap:12px;padding-top:20px;border-top:1px solid var(--line)}
+.block:first-of-type{border-top:0;padding-top:0}
+.row-end{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.row-end .fine{margin-right:auto}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--raised);box-shadow:var(--shadow);border-radius:18px;padding:11px 12px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-weight:400;font-size:30px;letter-spacing:-.05em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);line-height:1.3}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.bar{--t:var(--muted);display:grid;grid-template-columns:150px minmax(0,1fr) 40px;gap:10px;align-items:center}
+.track{height:8px;border-radius:999px;background:#DDD8CE;overflow:hidden}
+.track i{display:block;height:100%;background:var(--t);box-shadow:inset 0 0 0 1px rgba(29,24,24,.08);border-radius:999px}
+.bar-n{font-size:13px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.aprend{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.ejemplos{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:10px}
+.ej{display:flex;align-items:center;justify-content:flex-end;gap:4px;width:100%}
+.ej .bubble{font-size:14px}
+.chk{display:flex;flex-direction:column;gap:6px}
+.chk label{display:flex;gap:10px;align-items:flex-start;background:var(--raised);border-radius:14px;padding:10px 12px;cursor:pointer}
+.chk input{margin-top:3px;accent-color:var(--coral)}
+.corr{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.corr-item{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;font-size:14px;background:var(--raised);border-radius:14px;padding:10px 12px}
+.corr-item p{margin:0;min-width:0}
+.corr-item s{color:var(--muted)}
+details>summary{cursor:pointer}
+
+.rev{display:flex;flex-direction:column;gap:14px}
+.rev-imp{margin:0;font-size:16px}
+.rev ul{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.rev p{margin:6px 0 0}
+.props{display:flex;flex-direction:column;gap:8px}
+.prop{background:var(--raised);box-shadow:var(--shadow);border-radius:16px;padding:11px 13px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.prop-d{font-size:12px;font-weight:600;color:var(--muted)}
+.prop p{margin:0}
+
+.fotos{display:flex;flex-direction:column;gap:12px}
+.foto{display:grid;grid-template-columns:84px minmax(0,1fr);gap:12px;align-items:start}
+.foto img{width:84px;height:112px;object-fit:cover;border-radius:14px;display:block}
+.foto-main{display:flex;flex-direction:column;gap:8px;min-width:0}
+.foto-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vd{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;color:var(--noche)}
+.vd-si{background:var(--noche);color:var(--hueso)}
+.vd-cambios{background:var(--arena)}
+.vd-no{background:var(--coral);color:#FFF7F4}
+.puntaje{font-family:var(--f-display);font-weight:400;font-size:32px;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.puntaje small{font-family:var(--f-body);font-size:12px;font-weight:500;color:var(--muted)}
+.foto ul{margin:4px 0 0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:3px}
+.caps{display:flex;flex-direction:column;gap:6px}
+.cap{display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--surface);border-radius:12px;padding:8px 10px;font-size:14px}
+.cap p{margin:0;min-width:0;white-space:pre-line}
+.cap .fine{flex:none;font-variant-numeric:tabular-nums}
+.hfoto{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:start}
+.hfoto img{width:56px;height:76px;object-fit:cover;border-radius:12px;display:block}
+.hfoto-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.hfoto-main p{margin:0}
+
+/* Pestañas flotantes */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px));pointer-events:none}
+.tabs-in{pointer-events:auto;max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);background:var(--blanco);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:5px}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;cursor:pointer;border-radius:20px;min-width:0}
+.tab svg{width:22px;height:22px}
+.tab[aria-current="page"]{color:var(--hueso);background:var(--noche);box-shadow:none}
+.tab[aria-current="page"] svg{animation:tabBounce .45s var(--spring)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:7;background:var(--noche);color:var(--hueso);padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;max-width:calc(100% - 32px);text-align:center;box-shadow:var(--shadow);animation:toastIn .35s var(--spring)}
+
+@media (max-width:420px){
+  .view-title{font-size:30px}
+  .bar{grid-template-columns:118px minmax(0,1fr) 36px}
+  .stat b{font-size:22px}
+  .foto{grid-template-columns:64px minmax(0,1fr)}
+  .foto img{width:64px;height:86px}
+  .kpi b{font-size:26px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .splash{animation-delay:.4s!important}
+  .splash *{animation-delay:0s!important}
+  .ff:hover:not(.open){transform:none}
+}
+
+/* Conexión con tu servidor (pantalla de clave) */
+.conexion{z-index:90}
+.conexion .pantalla-in{padding-top:6vh}
+.conexion form{display:flex;flex-direction:column;gap:14px}
+.conexion input[type=password],.conexion input[type=url]{background:var(--raised);border:1px solid var(--line);border-radius:16px;padding:12px 14px;width:100%;box-sizing:border-box;min-width:0}
+.conexion input:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(200,77,74,.16);outline:none}
+</style>
+</head>
+<body>
+
+<div class="splash" aria-hidden="true">
+  <div class="splash-circles"><i></i><i></i><i></i></div>
+  <p class="splash-word">Chamuy<span>IA</span></p>
+  <p class="splash-tag">Tu fichero de chamuyo</p>
+</div>
+
+<section class="pantalla" id="onboarding" aria-labelledby="ob-t" hidden>
+  <div class="pantalla-in">
+    <div class="ob-progreso" aria-hidden="true"><i></i><i></i><i></i></div>
+    <p class="label" id="ob-paso-t">Paso 1 de 3</p>
+
+    <div class="ob-paso" data-paso="1">
+      <h1 class="view-title" id="ob-t">Armemos tu perfil</h1>
+      <p class="lede">Tres pasos cortos para que te escriba como vos. Todo se puede cambiar después en Perfil.</p>
+      <p class="fine" id="ob-donde"></p>
+      <div class="field">
+        <label class="label" for="ob-nombre">Cómo te llamás</label>
+        <input type="text" id="ob-nombre" autocomplete="given-name" placeholder="Tu nombre o apodo">
+      </div>
+      <button class="btn primary big" type="button" data-act="ob-seguir">Seguir</button>
+      <button class="linkish" type="button" data-act="menu-importar">Ya la usaba: cargar mi copia</button>
+    </div>
+
+    <div class="ob-paso" data-paso="2" hidden>
+      <h2 class="view-title">¿Cómo escribís?</h2>
+      <p class="lede">Subí capturas de chats tuyos (apps de citas, Instagram o WhatsApp) y aprendo tu forma de escribir. Mejor si son chats donde te fue bien.</p>
+      <div class="drop" id="o-drop">
+        <input type="file" id="o-files" accept="image/*" multiple>
+        <div class="thumbs" id="o-thumbs" hidden></div>
+        <label for="o-files" class="btn small">Subir capturas</label>
+        <p class="fine" id="o-drop-hint">Hasta 5 por vez. Las capturas no se guardan: saco tus mensajes y elegís cuáles quedan.</p>
+      </div>
+      <button class="btn" id="o-go" type="button" data-act="ob-leer">Aprender de mis capturas</button>
+      <div id="o-out" aria-live="polite"></div>
+      <div class="field">
+        <label class="label" for="ob-msgs">O pegá mensajes tuyos</label>
+        <textarea id="ob-msgs" rows="3" placeholder="Uno por línea"></textarea>
+      </div>
+      <div class="ob-nav">
+        <button class="btn" type="button" data-act="ob-atras">Atrás</button>
+        <button class="btn primary" type="button" data-act="ob-seguir" id="ob-seguir-2">Seguir</button>
+      </div>
+    </div>
+
+    <div class="ob-paso" data-paso="3" hidden>
+      <h2 class="view-title">Contame de vos</h2>
+      <p class="lede">Todo opcional. Respondé como te salga: sirve para que los mensajes tengan datos tuyos de verdad.</p>
+      <div id="ob-campos"></div>
+      <div class="ob-nav">
+        <button class="btn" type="button" data-act="ob-atras">Atrás</button>
+        <button class="btn primary" id="ob-go" type="button">Empezar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="app">
+  <header class="top">
+    <p class="brand">Chamuy<span>IA</span></p>
+    <div class="cuenta">
+      <button class="me" id="me" data-act="menu-cuenta" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-cuenta" aria-label="Tu cuenta"></button>
+      <div class="menu" id="menu-cuenta" role="menu" aria-label="Tu cuenta" hidden>
+        <div class="menu-cab"><b id="menu-nombre">Tu cuenta</b><span id="menu-donde">Conectado a tu servidor</span></div>
+        <button type="button" role="menuitem" data-act="menu-perfil">Mi perfil</button>
+        <button type="button" role="menuitem" data-act="menu-exportar">Descargar copia de mis datos</button>
+        <button type="button" role="menuitem" data-act="menu-importar">Cargar una copia</button>
+        <button type="button" role="menuitem" class="menu-salir" data-act="menu-salir" aria-expanded="false" aria-controls="menu-aviso">Salir en este dispositivo</button>
+        <div class="menu-aviso" id="menu-aviso" hidden>
+          <p>Se borra la clave de acceso de este navegador y la próxima vez te la pide de nuevo.</p>
+          <p class="fine">Tus datos no se borran.</p>
+          <a class="btn small primary" href="#" role="button" data-act="menu-desconectar">Salir</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <p class="banner" id="banner" role="status" hidden></p>
+
+  <main>
+    <section class="view" id="v-nueva" aria-labelledby="t-nueva">
+      <div class="intro">
+        <h1 class="view-title" id="t-nueva">¿Qué le pongo?</h1>
+        <p class="lede">Subí la captura del chat o de su perfil y te armo tres opciones con tu estilo.</p>
+      </div>
+
+      <div class="field">
+        <label class="label" for="n-chica">Con quién</label>
+        <select id="n-chica"><option value="">Nueva chica</option></select>
+      </div>
+      <div class="row" id="n-nueva-chica">
+        <input type="text" id="n-nombre" placeholder="Nombre (opcional)" autocomplete="off">
+        <select id="n-app" aria-label="App"></select>
+      </div>
+
+      <div class="field">
+        <span class="label" id="l-tipo">Qué necesitás</span>
+        <div class="chips" id="n-tipo" role="group" aria-labelledby="l-tipo"></div>
+      </div>
+
+      <div class="drop" id="n-drop">
+        <input type="file" id="n-files" accept="image/*" multiple>
+        <div class="thumbs" id="n-thumbs" hidden></div>
+        <label for="n-files" class="btn small">Subir capturas</label>
+        <p class="fine" id="n-drop-hint">Podés subir varias. En la compu también podés pegarlas.</p>
+      </div>
+
+      <div class="field">
+        <label class="label" for="n-contexto">Algo más que tenga que saber</label>
+        <textarea id="n-contexto" rows="2" placeholder="ej: hace 3 días no contesta, o pegá el chat acá si no tenés captura"></textarea>
+      </div>
+
+      <div class="go">
+        <button class="btn primary big" id="n-go" data-act="consultar-go">Armar respuestas</button>
+        <p class="fine">Las capturas no se guardan. Solo queda lo que Claude lee de ellas.</p>
+      </div>
+
+      <div id="n-out" aria-live="polite"></div>
+      <div class="pend" id="n-pend" hidden></div>
+    </section>
+
+    <section class="view" id="v-chicas" aria-labelledby="t-chicas" hidden>
+      <div id="ch-list-wrap" class="view">
+        <div class="intro">
+          <h1 class="view-title" id="t-chicas">Hola</h1>
+          <p class="lede">Tu fichero de chamuyo: cómo venís y qué tipo de chamuyero sos.</p>
+        </div>
+        <div class="kpis" id="ch-kpis"></div>
+        <div id="ch-tipo"></div>
+        <div class="intro">
+          <h2 class="h2">Tus conversaciones</h2>
+          <p class="fine" id="ch-resumen">Cada chat con su historial y lo que le mandaste.</p>
+        </div>
+        <div id="ch-list"></div>
+      </div>
+      <div id="ch-detail" class="detail" hidden></div>
+    </section>
+
+    <section class="view" id="v-citas" aria-labelledby="t-citas" hidden>
+      <div class="intro">
+        <h1 class="view-title" id="t-citas">Ideas de citas</h1>
+        <p class="lede">Planes concretos según tus gustos y lo que sabemos de ella, con el mensaje para invitarla.</p>
+      </div>
+      <div class="field">
+        <label class="label" for="c-chica">Con quién</label>
+        <select id="c-chica"><option value="">Todavía no sé con quién</option></select>
+      </div>
+      <div class="field">
+        <label class="label" for="c-zona">Zona</label>
+        <input type="text" id="c-zona" placeholder="ej: Palermo, Núñez, Olivos" autocomplete="off">
+      </div>
+      <div class="field">
+        <span class="label">Presupuesto</span>
+        <div class="chips" id="c-presu"></div>
+      </div>
+      <div class="field">
+        <span class="label">Cuándo</span>
+        <div class="chips" id="c-cuando"></div>
+      </div>
+      <div class="go">
+        <button class="btn primary big" id="c-go" data-act="citas-go">Darme ideas</button>
+        <p class="fine">Antes de invitarla, tocá "Ver en Google Maps" para chequear horarios y reseñas.</p>
+      </div>
+      <div id="c-out" aria-live="polite"></div>
+    </section>
+
+    <section class="view" id="v-perfil" aria-labelledby="t-perfil" hidden>
+      <div class="intro">
+        <h1 class="view-title" id="t-perfil">Tu perfil</h1>
+        <p class="lede">Lo que Claude sabe de vos y lo que fue aprendiendo de tus chats.</p>
+      </div>
+
+      <section class="block">
+        <h2 class="h2">Tu ficha</h2>
+        <p class="fine">Escribila como quieras. Se usa en cada respuesta.</p>
+        <div class="field">
+          <label class="label" for="p-nombre">Cómo te llamás</label>
+          <input type="text" id="p-nombre" autocomplete="given-name">
+        </div>
+        <textarea id="p-ficha" rows="14" aria-label="Tu ficha"></textarea>
+        <div class="row-end">
+          <span class="fine" id="p-ficha-st"></span>
+          <button class="btn small" id="p-ficha-save" data-act="ficha-save">Guardar ficha</button>
+        </div>
+      </section>
+
+      <section class="block" id="e-block">
+        <h2 class="h2">Así escribo yo</h2>
+        <p class="fine">Mensajes tuyos que te gusten. Es lo que más ayuda a que las opciones suenen a vos. También se suman solos cuando corregís una opción, y abajo quedan las opciones que te gustaron.</p>
+        <div id="e-lista"></div>
+        <textarea id="e-texto" rows="3" placeholder="Pegá mensajes tuyos, uno por línea" aria-label="Mensajes tuyos"></textarea>
+        <div class="row-end">
+          <span class="fine" id="e-st"></span>
+          <button class="btn small" id="e-add" data-act="ej-add">Agregar</button>
+        </div>
+        <div class="drop" id="e-drop">
+          <input type="file" id="e-files" accept="image/*" multiple>
+          <div class="thumbs" id="e-thumbs" hidden></div>
+          <label for="e-files" class="btn small">Subir capturas de chats tuyos</label>
+          <p class="fine" id="e-drop-hint">Saco solo tus mensajes y elegís cuáles guardar. Mejor si son chats donde te fue bien.</p>
+        </div>
+        <button class="btn" id="e-go" data-act="ej-extraer">Sacar mis mensajes de las capturas</button>
+        <div id="e-out" aria-live="polite"></div>
+        <div id="e-fav"></div>
+        <div id="e-corr"></div>
+      </section>
+
+      <section class="block">
+        <h2 class="h2">Lo que te funciona</h2>
+        <div id="p-stats"></div>
+        <ul class="aprend" id="p-aprend" hidden></ul>
+        <div id="p-aprend-out"></div>
+        <div class="row-end">
+          <span class="fine" id="p-aprend-hint"></span>
+          <button class="btn small" id="p-aprend-go" data-act="aprend-go">Sacar conclusiones</button>
+        </div>
+      </section>
+
+    </section>
+
+    <section class="view" id="v-mejorar" aria-labelledby="t-mejorar" hidden>
+      <div class="intro">
+        <h1 class="view-title" id="t-mejorar">Mejorá tu perfil</h1>
+        <p class="lede">Fijate si una foto está buena antes de subirla, y revisá tu Instagram o tu perfil de la app.</p>
+      </div>
+
+      <section class="block" id="f-block">
+        <h2 class="h2">¿La subo?</h2>
+        <p class="fine">Subí una o varias fotos tuyas y te digo si están buenas, dónde usarlas y qué cambiarías.</p>
+        <div class="field">
+          <span class="label">Para dónde</span>
+          <div class="chips" id="f-destino"></div>
+        </div>
+        <div class="drop" id="f-drop">
+          <input type="file" id="f-files" accept="image/*" multiple>
+          <div class="thumbs" id="f-thumbs" hidden></div>
+          <label for="f-files" class="btn small">Subir fotos</label>
+          <p class="fine" id="f-drop-hint">Si subís varias, te digo cuál va primero. Las fotos no se guardan.</p>
+        </div>
+        <button class="btn primary" id="f-go" data-act="foto-go">Revisar fotos</button>
+        <div id="f-out" aria-live="polite"></div>
+      </section>
+
+      <section class="block" id="b-block">
+        <h2 class="h2">Tu estado para la app de citas</h2>
+        <p class="fine">La bio o descripción de tu perfil. Te armo opciones con tu ficha y tu forma de escribir, y respuestas para los prompts.</p>
+        <select id="b-app" aria-label="App de citas"></select>
+        <div class="field">
+          <span class="label">Tono</span>
+          <div class="chips" id="b-tono"></div>
+        </div>
+        <div class="field">
+          <label class="label" for="b-texto">Tu estado actual o algo que quieras que diga (opcional)</label>
+          <textarea id="b-texto" rows="2" placeholder="ej: pegá tu bio de ahora, o &quot;que se note que cocino&quot;"></textarea>
+        </div>
+        <button class="btn primary" id="b-go" data-act="bio-go">Armame opciones</button>
+        <div id="b-out" aria-live="polite"></div>
+      </section>
+
+      <section class="block" id="h-block">
+        <h2 class="h2">Estados e historias</h2>
+        <p class="fine">Ideas de qué subir a tus estados de WhatsApp o historias de Instagram según tu perfil, para que les den ganas de responderte.</p>
+        <div class="field">
+          <span class="label">Dónde</span>
+          <div class="chips" id="h-donde"></div>
+        </div>
+        <div class="field">
+          <label class="label" for="h-texto">Qué estás haciendo o qué tenés para subir</label>
+          <textarea id="h-texto" rows="2" placeholder="ej: el sábado cocino para mis amigos. O dejalo vacío y te tiro ideas"></textarea>
+        </div>
+        <div class="drop" id="h-drop">
+          <input type="file" id="h-files" accept="image/*" multiple>
+          <div class="thumbs" id="h-thumbs" hidden></div>
+          <label for="h-files" class="btn small">Sumar fotos (opcional)</label>
+          <p class="fine" id="h-drop-hint">Si subís fotos, te digo cuál va y qué ponerle. No se guardan.</p>
+        </div>
+        <button class="btn primary" id="h-go" data-act="hist-go">Darme ideas</button>
+        <div id="h-out" aria-live="polite"></div>
+      </section>
+
+      <section class="block" id="w-block">
+        <h2 class="h2">Tu frase de WhatsApp</h2>
+        <p class="fine">El texto corto que aparece debajo de tu nombre en WhatsApp.</p>
+        <button class="btn" id="w-go" data-act="wa-go">Proponeme frases</button>
+        <div id="w-out" aria-live="polite"></div>
+      </section>
+
+      <section class="block" id="r-block">
+        <h2 class="h2">Revisá tu perfil</h2>
+        <p class="fine">Subí capturas de tu Instagram o de tu perfil en la app y te digo qué cambiaría, con textos listos para copiar.</p>
+        <select id="r-app" aria-label="Qué perfil"></select>
+        <div class="drop" id="r-drop">
+          <input type="file" id="r-files" accept="image/*" multiple>
+          <div class="thumbs" id="r-thumbs" hidden></div>
+          <label for="r-files" class="btn small">Subir capturas de tu perfil</label>
+          <p class="fine" id="r-drop-hint">Bio, fotos y lo que se vea. Podés subir varias.</p>
+        </div>
+        <button class="btn primary" id="r-go" data-act="rev-go">Revisar mi perfil</button>
+        <div id="r-out" aria-live="polite"></div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="Secciones">
+  <div class="tabs-in">
+    <button class="tab" data-act="tab" data-arg="nueva" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 5.5h15v10.5H10l-5.5 4v-14.5z"/><path d="M8.5 10.5h7"/></svg>
+      <span>Chamuyar</span>
+    </button>
+    <button class="tab" data-act="tab" data-arg="chicas" aria-current="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 10.5h17"/></svg>
+      <span>Fichero</span>
+    </button>
+    <button class="tab" data-act="tab" data-arg="citas" aria-current="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3.5h8l-.7 5.3a3.3 3.3 0 0 1-6.6 0L8 3.5z"/><path d="M12 12.2v7.8M8.5 20h7"/></svg>
+      <span>Citas</span>
+    </button>
+    <button class="tab" data-act="tab" data-arg="mejorar" aria-current="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h3.2L8.8 6h6.4l1.6 2.5H20V19H4z"/><circle cx="12" cy="13.5" r="3.3"/></svg>
+      <span>Mejorar</span>
+    </button>
+    <button class="tab" data-act="tab" data-arg="perfil" aria-current="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1-3.8 3.8-6 7-6s6 2.2 7 6"/></svg>
+      <span>Perfil</span>
+    </button>
+  </div>
+</nav>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<section class="pantalla conexion" id="conexion" aria-labelledby="cx-t" hidden>
+  <div class="pantalla-in">
+    <h1 class="view-title" id="cx-t">Entrá a ChamuyIA</h1>
+    <p class="lede">Poné la clave de acceso que elegiste en Cloudflare. Queda guardada en este navegador y no te la vuelve a pedir.</p>
+    <form id="cx-form" novalidate>
+      <input type="text" name="username" value="ChamuyIA" autocomplete="username" hidden>
+      <div class="field" id="cx-campo-servidor" hidden>
+        <label class="label" for="cx-servidor">Dirección de tu servidor</label>
+        <input type="url" id="cx-servidor" placeholder="https://chamuyia.tu-usuario.workers.dev" autocomplete="url" inputmode="url" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label class="label" for="cx-clave">Clave de acceso</label>
+        <input type="password" id="cx-clave" autocomplete="current-password">
+      </div>
+      <p class="error" id="cx-error" role="alert" hidden></p>
+      <button class="btn primary big" type="submit" id="cx-go">Entrar</button>
+    </form>
+  </div>
+</section>
+<input type="file" id="cx-importar" accept="application/json,.json" hidden>
+
+<script>
+// ---------- ChamuyIA fuera de claude.ai ----------
+// Reemplaza window.claude por tu propio servidor (un Worker de Cloudflare, ver worker.js):
+// las respuestas salen de la API de Claude y el fichero se sincroniza entre tus dispositivos.
+(() => {
+'use strict';
+
+// Dirección de tu Worker. Si queda vacía, la app la pide la primera vez.
+const SERVIDOR = '';
+
+const K_CLAVE = 'chamuyia.clave', K_SERV = 'chamuyia.servidor', K_PING = 'chamuyia.ping';
+const K_DATOS = 'chamuyia.local', K_SYNC = 'chamuyia.sync';
+const MODELO = 'claude-sonnet-5-5', MODELO_RAPIDO = 'claude-haiku-5-5';
+const TIPOS_IMG = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+const LADO_MAX = 1568;
+
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) { /* sin almacenamiento */ } },
+};
+const leerJSON = (k, def) => { try { const v = JSON.parse(ls.get(k) || 'null'); return v == null ? def : v; } catch (e) { return def; } };
+const limpiarUrl = u => String(u || '').trim().replace(/\/+$/, '');
+const copia = d => (d == null ? d : JSON.parse(JSON.stringify(d)));
+const err = code => { const e = new Error(code); e.code = code; return e; };
+const $ = id => document.getElementById(id);
+
+let servidor = limpiarUrl(SERVIDOR || ls.get(K_SERV));
+let clave = ls.get(K_CLAVE) || '';
+let info = null;
+
+// ---------- Llamadas al servidor ----------
+async function api(ruta, { method = 'GET', body, signal } = {}) {
+  const headers = { 'X-Clave': clave };
+  if (body) headers['Content-Type'] = 'application/json';
+  let r, data = null;
+  try {
+    r = await fetch(servidor + ruta, { method, body, signal, headers, cache: 'no-store' });
+    try { data = await r.json(); } catch (e) { if (signal && signal.aborted) throw e; }
+  } catch (e) {
+    if ((e && e.name === 'AbortError') || (signal && signal.aborted)) throw err('cancelled');
+    throw err('offline');
+  }
+  return { ok: r.ok, status: r.status, data };
+}
+
+async function ping() {
+  const r = await api('/ping');
+  if (r.status === 401) throw err('clave');
+  if (!r.ok || !r.data || !r.data.ok) throw err('servidor');
+  ls.set(K_PING, JSON.stringify(r.data));
+  return r.data;
+}
+
+const conTimeout = (p, ms) => Promise.race([p, new Promise((_, mal) => setTimeout(() => mal(err('offline')), ms))]);
+
+// ---------- Pantalla de clave ----------
+function pedirClave() {
+  const box = $('conexion'), form = $('cx-form'), inS = $('cx-servidor'), inC = $('cx-clave'), er = $('cx-error'), go = $('cx-go');
+  $('cx-campo-servidor').hidden = !!SERVIDOR;
+  inS.value = servidor || '';
+  box.hidden = false;
+  setTimeout(() => ((SERVIDOR || servidor) ? inC : inS).focus(), 60);
+  const mostrar = m => { er.textContent = m; er.hidden = !m; };
+  return new Promise(resolve => {
+    form.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      if (go.disabled) return;
+      const s = limpiarUrl(SERVIDOR || inS.value), c = inC.value.trim();
+      if (!/^https?:\/\/[^\s/]+\.[^\s]+$/i.test(s) && !/^http:\/\/localhost(:\d+)?$/i.test(s)) { mostrar('Poné la dirección de tu servidor, la que termina en workers.dev.'); inS.focus(); return; }
+      if (!c) { mostrar('Poné tu clave de acceso.'); inC.focus(); return; }
+      go.disabled = true; go.textContent = 'Entrando…'; mostrar('');
+      servidor = s; clave = c;
+      try {
+        const d = await ping();
+        ls.set(K_SERV, s); ls.set(K_CLAVE, c);
+        box.hidden = true;
+        resolve(d);
+      } catch (e) {
+        mostrar(e.code === 'clave' ? 'Esa clave no es. Tiene que ser la misma que pusiste en Cloudflare como CLAVE.'
+          : e.code === 'offline' ? 'No pude conectar con el servidor. Revisá la dirección y que tengas internet.'
+          : 'El servidor respondió algo raro. Revisá que el código del Worker esté bien pegado.');
+        inC.select();
+      } finally { go.disabled = false; go.textContent = 'Entrar'; }
+    });
+  });
+}
+
+const listo = (async () => {
+  if (servidor && clave) {
+    try { return (info = await conTimeout(ping(), 8000)); }
+    catch (e) {
+      // Sin internet: seguimos con lo guardado en este navegador.
+      if (e.code === 'offline') return (info = leerJSON(K_PING, { ok: true, datos: false }));
+    }
+  }
+  return (info = await pedirClave());
+})();
+
+// ---------- Claude ----------
+async function prepImagen(file) {
+  let fuente = null, url = '';
+  try {
+    try { fuente = await createImageBitmap(file); }
+    catch (e) {
+      url = URL.createObjectURL(file);
+      fuente = await new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => mal(err('image_rejected')); im.src = url; });
+    }
+    const w = fuente.naturalWidth || fuente.width, h = fuente.naturalHeight || fuente.height;
+    if (!w || !h) throw err('image_rejected');
+    const k = Math.min(1, LADO_MAX / Math.max(w, h));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(fuente, 0, 0, c.width, c.height);
+    const u = c.toDataURL('image/jpeg', 0.86);
+    return { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: u.slice(u.indexOf(',') + 1) } };
+  } catch (e) {
+    throw (e && e.code) ? e : err('image_rejected');
+  } finally {
+    if (url) URL.revokeObjectURL(url);
+    if (fuente && typeof fuente.close === 'function') fuente.close();
+  }
+}
+
+function sacarJSON(texto) {
+  const t = texto.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  try { return JSON.parse(t); } catch (e) { /* buscamos el objeto adentro */ }
+  const i = t.indexOf('{'), j = t.lastIndexOf('}');
+  if (i >= 0 && j > i) { try { return JSON.parse(t.slice(i, j + 1)); } catch (e) { /* sigue abajo */ } }
+  throw err('invalid_json');
+}
+
+function codigoError(status, data) {
+  if (data && data.code && !data.error) return data.code; // errores del Worker
+  const e = (data && data.error) || {}, tipo = e.type || '', msg = String(e.message || '').toLowerCase();
+  if (status === 401 || tipo === 'authentication_error' || tipo === 'permission_error') return 'api_key';
+  if (tipo === 'billing_error' || msg.includes('credit balance')) return 'sin_saldo';
+  if (status === 429 || tipo === 'rate_limit_error') return 'rate_limited';
+  if (status === 529 || status === 503 || tipo === 'overloaded_error') return 'overloaded';
+  if (status === 413 || tipo === 'request_too_large' || msg.includes('too long')) return 'prompt_too_large';
+  if (msg.includes('image')) return 'image_rejected';
+  return 'error';
+}
+
+const sample = {
+  async json(prompt, opts = {}) {
+    if (opts.signal && opts.signal.aborted) throw err('cancelled');
+    const imagenes = Array.isArray(opts.images) && opts.images.length ? await Promise.all(opts.images.map(prepImagen)) : [];
+    const rapido = opts.modelTier === 'quick';
+    const cuerpo = {
+      model: rapido ? (info.modeloRapido || MODELO_RAPIDO) : (info.modelo || MODELO),
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: [...imagenes, { type: 'text', text: String(prompt) }] }],
+      output_config: { effort: !rapido && ['low', 'medium', 'high'].includes(opts.effort) ? opts.effort : 'low' },
+    };
+    const r = await api('/claude', { method: 'POST', body: JSON.stringify(cuerpo), signal: opts.signal });
+    if (!r.ok) throw err(codigoError(r.status, r.data));
+    const d = r.data || {};
+    if (d.stop_reason === 'refusal') throw err('refused');
+    const texto = (Array.isArray(d.content) ? d.content : []).filter(b => b && b.type === 'text').map(b => b.text).join('').trim();
+    if (!texto) throw err('empty_completion');
+    return sacarJSON(texto);
+  },
+  async limits() { return { images: { mediaTypes: TIPOS_IMG.slice(), maxCount: 5, maxInputBytes: 40 * 1024 * 1024 } }; },
+};
+
+// ---------- Fichero sincronizado ----------
+// Misma forma que la base de claude.ai (doc, collection, orderBy, limit, onSnapshot).
+// Se guarda en este navegador y se sube entero a tu servidor; al volver a la app baja lo último.
+function crearDbSync() {
+  let datos = leerJSON(K_DATOS, {});
+  let meta = leerJSON(K_SYNC, { rev: 0, sucio: false });
+  if (!datos || typeof datos !== 'object') datos = {};
+  const oyentes = [];
+  const avisar = () => setTimeout(() => oyentes.slice().forEach(f => f()), 0);
+  const guardarLocal = () => { ls.set(K_DATOS, JSON.stringify(datos)); ls.set(K_SYNC, JSON.stringify(meta)); };
+  let timer = 0, subiendo = false;
+
+  const programar = ms => { clearTimeout(timer); timer = setTimeout(subir, ms); };
+  async function subir() {
+    timer = 0;
+    if (!meta.sucio) return;
+    if (subiendo) { programar(800); return; }
+    const rev = meta.rev;
+    subiendo = true;
+    try {
+      const r = await api('/datos', { method: 'PUT', body: JSON.stringify({ rev, datos }) });
+      if (!r.ok) programar(15000);
+      else if (meta.rev === rev) { meta.sucio = false; guardarLocal(); }
+    } catch (e) { programar(15000); }
+    finally { subiendo = false; }
+  }
+  function cambio() {
+    meta = { rev: Math.max(Date.now(), (meta.rev || 0) + 1), sucio: true };
+    guardarLocal(); avisar(); programar(1200);
+  }
+  async function bajar() {
+    const r = await api('/datos');
+    if (!r.ok) throw err(r.status === 401 ? 'clave' : 'servidor');
+    return r.data && typeof r.data === 'object' ? r.data : null;
+  }
+  function aplicar(remoto) {
+    const rev = Number(remoto && remoto.rev) || 0;
+    if (!remoto || !remoto.datos || typeof remoto.datos !== 'object') return false;
+    if (meta.sucio && meta.rev >= rev) return false;
+    if (!meta.sucio && rev <= meta.rev && Object.keys(datos).length) return false;
+    datos = remoto.datos; meta = { rev, sucio: false }; guardarLocal();
+    return true;
+  }
+  async function iniciar() {
+    try {
+      const remoto = await conTimeout(bajar(), 8000);
+      if (!aplicar(remoto) && Object.keys(datos).length && (!remoto || !remoto.datos || meta.sucio)) {
+        meta = { rev: meta.rev || Date.now(), sucio: true }; guardarLocal(); subir();
+      }
+    } catch (e) { if (meta.sucio) programar(5000); }
+  }
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'hidden') { if (meta.sucio) subir(); return; }
+    if (meta.sucio) { subir(); return; }
+    try { if (aplicar(await bajar())) avisar(); } catch (e) { /* sin conexión */ }
+  });
+  window.addEventListener('online', () => { if (meta.sucio) subir(); });
+
+  const snapDoc = path => { const d = datos[path]; return { id: path.split('/').pop(), exists: !!d, data: () => copia(d), metadata: {} }; };
+  const escuchar = f => { oyentes.push(f); setTimeout(f, 0); return () => { const i = oyentes.indexOf(f); if (i >= 0) oyentes.splice(i, 1); }; };
+  function docRef(path) {
+    return {
+      id: path.split('/').pop(),
+      get: async () => snapDoc(path),
+      set: async d => { datos[path] = copia(d); cambio(); },
+      update: async d => { if (!datos[path]) throw { code: 'invalid_argument' }; datos[path] = { ...datos[path], ...copia(d) }; cambio(); },
+      delete: async () => { delete datos[path]; cambio(); },
+      onSnapshot: cb => escuchar(() => cb(snapDoc(path))),
+      collection: sub => colRef(path + '/' + sub),
+    };
+  }
+  function colRef(path, orden, lim) {
+    const consulta = () => {
+      const largo = path.split('/').length + 1;
+      let docs = Object.keys(datos).filter(k => k.startsWith(path + '/') && k.split('/').length === largo)
+        .map(k => ({ id: k.split('/').pop(), exists: true, data: () => copia(datos[k]), metadata: {}, _d: datos[k] }));
+      if (orden) docs.sort((a, b) => ((a._d[orden.f] || 0) - (b._d[orden.f] || 0)) * (orden.dir === 'desc' ? -1 : 1));
+      if (lim) docs = docs.slice(0, lim);
+      return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: {} };
+    };
+    return {
+      doc: id => docRef(path + '/' + (id || Date.now().toString(36) + Math.random().toString(36).slice(2, 10))),
+      orderBy: (f, dir) => colRef(path, { f, dir }, lim),
+      limit: n => colRef(path, orden, n),
+      get: async () => consulta(),
+      onSnapshot: cb => escuchar(() => cb(consulta())),
+    };
+  }
+  return {
+    iniciar,
+    reemplazar(nuevos) { datos = copia(nuevos); cambio(); return subir(); },
+    api: { doc: docRef, collection: p => colRef(p) },
+  };
+}
+
+let dbSync = null;
+window.claude = {
+  async use(nombre) {
+    await listo;
+    if (nombre === 'sample') return sample;
+    if (!info.datos) return null; // sin base en el servidor: la app guarda solo en este navegador
+    if (nombre === 'user') return { isOwner: async () => true, id: async () => 'local' };
+    if (nombre === 'db') {
+      if (!dbSync) { dbSync = crearDbSync(); await dbSync.iniciar(); }
+      return dbSync.api;
+    }
+    return null;
+  },
+};
+
+// ---------- Copia de seguridad y salir ----------
+function exportar() {
+  const datos = leerJSON(K_DATOS, {});
+  const blob = new Blob([JSON.stringify({ app: 'ChamuyIA', version: 1, exportado: new Date().toISOString(), datos }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'chamuyia-copia-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+// Acepta la copia de esta app o la que se sacó de la versión de claude.ai (cualquier usuario pasa a "local").
+function normalizarCopia(obj) {
+  const fuente = obj && typeof obj === 'object' ? (obj.datos && typeof obj.datos === 'object' ? obj.datos : obj) : null;
+  if (!fuente) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(fuente)) {
+    const m = /^data\/users\/[^/]+\/(perfil(?:\/.*)?)$/.exec(k);
+    if (m && v && typeof v === 'object') out['data/users/local/' + m[1]] = v;
+  }
+  return out['data/users/local/perfil'] ? out : null;
+}
+async function importar(file) {
+  let obj = null;
+  try { obj = JSON.parse(await file.text()); } catch (e) { /* abajo */ }
+  const nuevos = normalizarCopia(obj);
+  if (!nuevos) { alert('Ese archivo no es una copia de ChamuyIA.'); return; }
+  const n = Object.keys(nuevos).filter(k => k.includes('/perfil/chicas/')).length;
+  if (!confirm(`Vas a cargar una copia con ${n === 1 ? '1 chica' : n + ' chicas'}. Reemplaza lo que tenés ahora en la app. ¿Seguimos?`)) return;
+  if (dbSync) await dbSync.reemplazar(nuevos);
+  else { ls.set(K_DATOS, JSON.stringify(nuevos)); ls.set(K_SYNC, JSON.stringify({ rev: Date.now(), sucio: true })); }
+  location.reload();
+}
+$('cx-importar').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importar(f); });
+
+window.chamuyia = {
+  salir() { ls.del(K_CLAVE); location.reload(); },
+  exportar,
+  importar: () => $('cx-importar').click(),
+};
+})();
+</script>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- Instrucciones para Claude ----------
+const ESTILO = `Sos el asistente de chamuyo de Nico. Le armás mensajes de levante que suenen a él en su mejor versión, en español rioplatense. El objetivo es generar conexión de verdad y llegar a verse en persona. Nada de técnicas manipuladoras (negging, histeriqueo calculado, mentir sobre él): lo que le funciona es ser gracioso y auténtico.
+
+QUÉ MANDA
+1. Lo que Nico pide en el momento manda por sobre cualquier regla de acá. Si pide una pregunta, las 3 opciones son preguntas (buenas, específicas y fáciles de contestar). No le discutas el pedido.
+2. Sus mensajes reales y lo que ya rechazó, si te los paso más abajo.
+3. El resto de estas reglas.
+
+CÓMO ESCRIBE NICO
+- Corto: preferí un solo mensaje. Dos solo si el segundo suma algo. Cada mensaje, de no más de 12 palabras. Nunca párrafos.
+- Simple antes que ingenioso: si el chiste necesita explicación, suena armado o mezcla dos ideas, descartalo. Lo que le funciona a Nico es directo y espontáneo.
+- Rioplatense natural, no de caricatura: voseo y "jajaja" sí, pero como mucho un modismo por mensaje ("che", "posta", "re", "una banda"), y solo si sale solo.
+- Nunca neutro: nada de "tú", "genial", "increíble", "platicar" ni "¿Qué tal tu día?".
+- Escribí como tipea él en el celu: primera letra en mayúscula (la pone el autocorrector), sin punto final, a veces "??" al preguntar, "Jajajaja" al arrancar cuando ella hizo un chiste y palabras repetidas ("Dale dale", "banco banco", "Sisi").
+- Que no suene a IA: puntuación relajada, sin "¡" ni "¿" de apertura, sin guiones largos ni punto y coma, sin frases simétricas ni "no solo X sino también Y", sin palabras de bot ("conectar", "vibra", "aventura", "energía", "me encantaría conocerte más", "suena fascinante"), sin halagos genéricos, sin entusiasmo forzado y sin cerrar con pregunta por reflejo. Tiene que parecer tipeado rápido con el pulgar.
+- Sin emojis.
+- Humor absurdo y autocrítico, sin quedar como un pobre tipo.
+- Seguro sin sobreactuar: no se justifica, no pide perdón, no se explica.
+- En Instagram y WhatsApp el tono puede ser un poco más suelto que en las apps, porque ya hubo un primer filtro.
+
+LO QUE LE FUNCIONA (ejemplos reales)
+1. Engancharse de algo concreto de ella (un prompt, una foto, una frase), no del saludo.
+2. Darle vuelta su propio chiste con autocrítica. Ella: "en persona remonto lo pt que soy x redes". Nico: "Pfff nadie es más pete que yo en persona".
+3. Humor absurdo: ella le mandó un meme de Kevin James y él siguió con "Soy ese" y "No podés usar mi foto".
+4. Ofrecer en vez de preguntar: ella puso "me gustaría disfrutar tanto de cocinar como de comer" y él respondió "Te puedo resolver lo de cocinar". Ya es media invitación y la deja con algo para contestar.
+5. Seguir el ida y vuelta: si ella exagera o hace un chiste, seguirle la corriente ("Jajajaja quien pudiera") antes de cambiar de tema.
+6. Halago físico solo con cuidado: de entrada no. Si ella manda una foto suya, algo livianito y enganchado a un detalle ("me gusta que tu remera hace que te resalten esos ojazos"). Nada sexual ni sobre el cuerpo.
+
+LO QUE MATA LA CONVERSACIÓN
+- "Qué onda [nombre] todo tranqui?" y "Todo bien vos??": es su muletilla y en sus chats murió siempre. Nunca sugerir small talk vacío. Si ella dice "hola qué tal", la respuesta igual trae un gancho.
+- La respuesta obvia al prompt. Ella: "pienso mucho en mis próximas vacaciones". Él: "A dónde vamos?", lo que le escriben 50 tipos más, y no hubo respuesta. Si la primera idea es la de cualquiera, buscale una vuelta: tomar una postura, proponer algo absurdo concreto o aportar algo propio.
+- Hacerla laburar con preguntas que la obligan a pensar mucho o a llevar la charla.
+- Varias preguntas juntas: una sola, o ninguna si el mensaje ya invita a responder.
+
+CÓMO LEER CAPTURAS
+- En general los mensajes de Nico están a la derecha. En OkCupid son las burbujas grises a la derecha y los de ella las violetas a la izquierda.
+- Los recuadros con título ("My self-summary", "I spend a lot of time thinking about", "I could probably beat you at"...) son prompts del perfil de ella y suelen ser el mejor gancho.
+- Fijate quién habló último y hace cuánto (las fechas dicen si el chat está frío), qué onda trae ella (seca, se rió, devuelve preguntas, coquetea) y si quedó algo servido que Nico no aprovechó.
+- Si la captura es un perfil sin chat, tratalo como un opener aunque el pedido diga otra cosa.`;
+
+const PROMPT_EXTRAER = `Te paso capturas de chats de Nico (apps de citas, Instagram o WhatsApp). Copiá textualmente solo los mensajes que escribió Nico, que en general son los de la derecha, tal cual están: sin corregir ortografía, mayúsculas ni puntuación. Dejá afuera los mensajes de la otra persona, los saludos vacíos ("hola", "todo bien?", "qué onda todo tranqui?") y los de una sola palabra. Si dos mensajes seguidos forman una idea, ponelos juntos separados por " / ".
+
+FORMATO
+Respondé solo con un objeto JSON: {"mensajes": ["...", "..."]}`;
+
+// Registro: saca los mensajes de la persona y cómo escribe, para arrancar con su voz.
+const PROMPT_ESTILO = `Te paso capturas de chats de Nico (apps de citas, Instagram o WhatsApp) para aprender cómo escribe.
+1. Copiá textualmente solo los mensajes que escribió Nico, que en general son los de la derecha, tal cual están: sin corregir ortografía, mayúsculas ni puntuación. Dejá afuera los mensajes de la otra persona, los saludos vacíos ("hola", "todo bien?") y los de una sola palabra. Si dos mensajes seguidos forman una idea, ponelos juntos separados por " / ".
+2. Escribí entre 3 y 5 observaciones cortas sobre cómo escribe, hablándole de vos: largo de los mensajes, mayúsculas y puntuación, si usa emojis o "jaja", si pregunta o propone, qué humor tiene. Basate solo en lo que se ve en las capturas.
+
+FORMATO
+Respondé solo con un objeto JSON: {"mensajes": ["...", "..."], "estilo": ["Escribís corto, en una línea", "..."]}`;
+
+const VOZ_CORTA = `Escribís para Nico, en español rioplatense. Los mensajes que él va a mandar llevan su voz: cortos, como los tipea en el celu (primera letra en mayúscula, sin punto final), con puntuación relajada, sin emojis, sin signos de apertura, sin guiones largos, sin palabras de bot ("conectar", "vibra", "aventura", "energía"), con humor absurdo y autocrítico y seguro sin sobreactuar. Nada de técnicas manipuladoras.`;
+
+const FORMATO_CONSULTA = `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{
+  "lectura": "una línea: qué onda trae ella y qué quedó servido",
+  "transcripcion": "los últimos mensajes visibles, uno por línea, empezando con 'ella:' o 'nico:'; vacío si no hay chat",
+  "nombre": "el nombre de ella si se ve, si no vacío",
+  "app": "Bumble, Tinder, OkCupid, Hinge, Instagram o WhatsApp si se nota, si no vacío",
+  "variantes": [
+    {"tono": "picante", "mensajes": ["primer mensaje", "segundo mensaje opcional"]},
+    {"tono": "absurdo", "mensajes": ["..."]},
+    {"tono": "cita", "mensajes": ["..."]}
+  ],
+  "recomendada": 0,
+  "porque": "una línea: cuál mandarías y por qué",
+  "resumen": "lo que sabemos de ella y del chat hasta ahora, en 2 a 4 líneas, sumando lo nuevo a lo que ya sabíamos"
+}
+Exactamente 3 variantes con tonos distintos. "tono" es "picante", "absurdo", "cita" o "profundo": usá "cita" si el momento da para invitar y "profundo" si todavía no. La etiqueta tiene que coincidir con el mensaje: "picante" es coqueto de verdad. Cada variante tiene 1 o 2 mensajes cortos. "recomendada" es el índice (0, 1 o 2) de la que mandarías. Si algo de la captura no se lee, decilo en "lectura" y seguí con la mejor interpretación.`;
+
+// Preguntas del registro. La ficha se arma como "pregunta: respuesta", una por línea.
+const FICHA_CAMPOS = [
+  ['Edad y barrio', '24, Palermo'],
+  ['Qué hacés (laburo, estudio)', 'Estudio diseño y laburo en una agencia'],
+  ['Un finde normal', 'Asado con amigos y fútbol el domingo'],
+  ['Gustos (música, deporte, comida, series)', 'Arctic Monkeys, pádel, pastas, The Office'],
+  ['Un dato o anécdota tuya que sirva de gancho', 'Me perdí dos días en Bariloche'],
+  ['Qué estás buscando', 'Algo casual, ver qué pinta'],
+  ['Citas que te gustan', 'Un bar tranqui, una feria, ver una banda'],
+  ['Temas que no querés tocar', 'Política'],
+];
+const FICHA_PLANTILLA = `Edad y barrio:
+Qué hacés (laburo, estudio):
+Un finde normal:
+Gustos (música, deporte, comida, series):
+Un dato o anécdota tuya que sirva de gancho:
+Qué estás buscando:
+Citas que te gustan:
+Temas que no querés tocar:`;
+
+// ---------- Catálogos ----------
+const TIPOS = {
+  responder: { label: 'Responder', pedido: 'Responder el chat: retomá lo último que dijo ella y sumá algo de Nico. Si el chat viene flojo, reencauzalo con un gancho nuevo.' },
+  arrancar: { label: 'Arrancar', pedido: 'Arrancar un match nuevo: buscá el detalle más específico de su perfil y armá algo que solo tenga sentido para ella. Mejor un remate o una propuesta que una pregunta.' },
+  invitar: { label: 'Invitar a salir', pedido: 'Llevar la charla a una cita: usá el tema que fluye como puente ("eso se discute con una birra"), proponé algo concreto pero liviano y dejale elegir el día o el lugar. Sin insistir.' },
+  revivir: { label: 'Revivir', pedido: 'Revivir un chat que se enfrió: nada de "volví" ni de pedir perdón. Retomá algo que dijo ella o hacé un chiste sobre el silencio, en una línea.' },
+};
+const TONOS = { picante: 'Picante / coqueto', absurdo: 'Absurdo / gracioso', cita: 'Directo a la cita', profundo: 'Más profundo', propia: 'Tu versión' };
+const ICON_LIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg>';
+const ICON_DISLIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 13.5V4.5h9.2a2 2 0 0 1 2 1.7l1 6.3a2 2 0 0 1-2 2.3H14l.7 3.4a1.7 1.7 0 0 1-3.1 1.2L7.5 13.5z"/><path d="M4 4.5h3.5v9H4z"/></svg>';
+const MOTIVOS = ['Suena a bot', 'Muy largo', 'No lo diría así', 'Muy forzado', 'Muy intenso', 'Muy aburrido', 'No es lo que pedí'];
+const ESTADOS = { hablando: 'Hablando', cita: 'Cita armada', salimos: 'Salimos', frio: 'Se enfrió', cerrado: 'Terminó' };
+const RESULTADOS = { respondio: 'Respondió', nada: 'No respondió', cita: 'Salió cita' };
+const AJUSTES = {
+  corto: { label: 'Más corto', pedido: 'Hacelas más cortas todavía. Mantené 3 variantes.' },
+  suave: { label: 'Menos intenso', pedido: 'Bajales la intensidad: más relajadas, menos coqueteo. Mantené 3 variantes.' },
+  picante: { label: 'Más picante', pedido: 'Subiles el picante, con onda y sin nada sexual. Mantené 3 variantes.' },
+  otras: { label: 'Otras 3', pedido: 'Dame 3 opciones nuevas, bien distintas a estas.' },
+};
+const APPS = ['Bumble', 'Tinder', 'OkCupid', 'Hinge', 'Instagram', 'WhatsApp', 'Otra'];
+const PRESU = { barato: 'Barato', normal: 'Normal', gusto: 'Darse un gusto' };
+const CUANDO = { semana: 'Semana a la noche', 'finde-dia': 'Finde de día', 'finde-noche': 'Finde a la noche' };
+
+// ---------- Estado ----------
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const ORDENES = { recientes: 'Recientes', viejas: 'Más viejas', az: 'A–Z' };
+const S = {
+  sample: null, db: null, user: null, uid: null, limits: null, ready: false,
+  perfil: { nombre: '', ficha: '', aprendizajes: [], ejemplos: [], correcciones: [], favoritas: [] }, perfilLoaded: false, fichaDirty: false,
+  chicas: [], consultas: [],
+  tab: 'nueva', chicaAbierta: null, borrarArmado: false, borrarT: 0,
+  nueva: { chicaId: '', tipo: 'responder', files: [], running: false, since: 0, ctl: null, result: null, consultaId: null, enviada: null, error: '', saveError: '', fb: null, rechazadas: [], likes: [] },
+  citas: { chicaId: '', presupuesto: 'normal', cuando: 'finde-noche', running: false, since: 0, ctl: null, result: null, error: '' },
+  aprend: { running: false, since: 0, ctl: null, error: '' },
+  rev: { files: [], running: false, since: 0, ctl: null, result: null, error: '' },
+  ej: { files: [], running: false, since: 0, ctl: null, extraidos: null, error: '' },
+  ob: { paso: 1, files: [], running: false, since: 0, ctl: null, extraidos: [], estilo: [], error: '' },
+  foto: { files: [], destino: 'ig', running: false, since: 0, ctl: null, result: null, error: '' },
+  hist: { files: [], donde: 'ambos', running: false, since: 0, ctl: null, result: null, error: '' },
+  wa: { running: false, since: 0, ctl: null, frases: null, error: '' },
+  bio: { tono: 'mezcla', running: false, since: 0, ctl: null, result: null, error: '' },
+  pasteM: 'f',
+  ffOrden: lsGet('chamuyia.ff.orden') || 'recientes',
+  ffFiltro: lsGet('chamuyia.ff.filtro') || 'todas',
+  ffAbierta: null,
+  anim: {},
+  sucio: {},
+};
+const filesDe = k => ({ n: S.nueva, r: S.rev, e: S.ej, f: S.foto, h: S.hist, o: S.ob })[k];
+const DESTINOS = { ig: 'Instagram', app: 'App de citas', ambas: 'Las dos' };
+const DONDE = { wa: 'Estado de WhatsApp', ig: 'Historia de Instagram', ambos: 'Los dos' };
+const TONOS_BIO = { mezcla: 'Mezcla', absurdo: 'Gracioso', cita: 'Directo', picante: 'Picante', profundo: 'Profundo' };
+const LIMITES_BIO = {
+  OkCupid: { max: 0, txt: 'En OkCupid el resumen puede ser largo, pero mejor de 2 a 4 líneas.' },
+  Bumble: { max: 300, txt: 'En Bumble la bio tiene un máximo de 300 caracteres.' },
+  Tinder: { max: 500, txt: 'En Tinder la bio tiene un máximo de 500 caracteres, pero mejor entre 100 y 250.' },
+  Hinge: { max: 150, txt: 'Hinge no tiene bio libre: cada opción va como respuesta a un prompt de Hinge (poné el prompt en "enfoque") y tiene un máximo de 150 caracteres.' },
+};
+const VEREDICTOS = { si: 'Subila', cambios: 'Con cambios', no: 'Mejor no' };
+const PASTELES = ['coral', 'arena', 'tinto', 'rubor'];
+const COLOR_ESTADO = { hablando: 'arena', cita: 'coral', salimos: 'rubor', frio: 'piedra', cerrado: 'gris' };
+const FF_COLORES = ['coral', 'arena', 'tinto', 'rubor', 'piedra', 'noche'];
+const svgIcon = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICO = {
+  chicas: '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c.8-3.3 3-5.2 5.5-5.2s4.7 1.9 5.5 5.2"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.3c2.2.2 3.9 1.8 4.7 4.7"/>',
+  usados: '<path d="M4.5 5.5h15v10.5H10l-5.5 4v-14.5z"/><path d="M8.5 10.5h7"/>',
+  resp: '<path d="M5 12.5l4.2 4.2L19 7"/>',
+  picante: '<path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.3 2.6-5 3.4-8.4 2 1.3 2.6 3 2.6 4.6 1-1 1.6-2.2 1.6-3.6 2.4 1.8 4.4 4.3 4.4 7.4 0 3.2-2.4 5.6-6 5.6z"/>',
+  absurdo: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 13.5c.9 1.4 2.1 2.1 3.5 2.1s2.6-.7 3.5-2.1"/><path d="M9.3 9.6h.01M14.7 9.6h.01"/>',
+  cita: '<path d="M8 3.5h8l-.7 5.3a3.3 3.3 0 0 1-6.6 0L8 3.5z"/><path d="M12 12.2v7.8M8.5 20h7"/>',
+  profundo: '<path d="M12 19.5s-7-4.3-7-9.4A4 4 0 0 1 12 7.8a4 4 0 0 1 7 2.3c0 5.1-7 9.4-7 9.4z"/>',
+};
+const TIPOS_CHAMUYO = {
+  picante: { nombre: 'Picante', desc: 'Vas al frente, con onda y un poco de coqueteo.' },
+  absurdo: { nombre: 'Gracioso', desc: 'Tu arma es el humor raro y reírte de vos mismo.' },
+  cita: { nombre: 'Directo', desc: 'No das vueltas: proponés planes concretos.' },
+  profundo: { nombre: 'Profundo', desc: 'Te gusta la charla con contenido antes de jugarte.' },
+};
+
+// ---------- Utilidades ----------
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const str = v => { const s = typeof v === 'string' ? v.trim() : ''; return /^(null|undefined|n\/a|ninguno|ninguna)$/i.test(s) ? '' : s; };
+const base = () => S.db.doc('data/users/' + S.uid + '/perfil');
+const canSave = () => !!(S.db && S.uid);
+const usada = c => Number.isInteger(c.enviada) && Array.isArray(c.variantes) && !!c.variantes[c.enviada];
+const msgDe = c => c.variantes[c.enviada].mensajes.join(' / ');
+const chicaPorId = id => S.chicas.find(c => c.id === id) || null;
+const inicial = n => (String(n || '?').trim()[0] || '?').toUpperCase();
+const matchApp = s => { const t = String(s || '').toLowerCase(); return APPS.find(a => a !== 'Otra' && t.includes(a.toLowerCase())) || ''; };
+const rtf = new Intl.RelativeTimeFormat('es-AR', { numeric: 'auto' });
+function hace(ts) {
+  if (!ts) return '';
+  const s = (ts - Date.now()) / 1000, a = Math.abs(s);
+  if (a < 60) return 'recién';
+  if (a < 3600) return rtf.format(Math.round(s / 60), 'minute');
+  if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour');
+  if (a < 86400 * 30) return rtf.format(Math.round(s / 86400), 'day');
+  return new Date(ts).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+}
+function haceCorto(ts) {
+  if (!ts) return '';
+  const m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  if (m < 60) return m < 1 ? 'ahora' : m + ' min';
+  if (m < 1440) return Math.round(m / 60) + ' h';
+  const d = Math.round(m / 1440);
+  if (d < 7) return d + ' d';
+  if (d < 30) return Math.round(d / 7) + ' sem';
+  return new Date(ts).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+}
+const fechaCorta = ts => ts ? new Date(ts).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) : '';
+
+let toastT = 0;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600);
+}
+function setBanner(msg) { const b = $('#banner'); b.textContent = msg; b.hidden = !msg; }
+
+function errorCopy(e) {
+  switch (e && e.code) {
+    case 'cancelled': return null;
+    case 'not_granted': return 'La página no tiene permiso para usar Claude. Habilitalo desde el menú de permisos del artifact y probá de nuevo.';
+    case 'sampling_disabled': return 'Claude no está disponible para esta cuenta.';
+    case 'rate_limited': return 'Llegaste al límite de uso por ahora. Probá de nuevo en un rato.';
+    case 'session_expired': return 'Se venció la sesión. Volvé a entrar a claude.ai.';
+    case 'image_rejected': return 'Alguna captura no se pudo leer. Probá con otra imagen en JPG o PNG.';
+    case 'images_unavailable': return 'Esta vista no puede mandar imágenes. Pegá el chat como texto.';
+    case 'refused': return 'Claude no quiso responder esto. Probá cambiando el pedido.';
+    case 'invalid_json': case 'empty_completion': return 'La respuesta vino incompleta. Tocá de nuevo para reintentar.';
+    case 'prompt_too_large': return 'Es demasiado texto. Recortá el contexto.';
+    case 'clave': return 'La clave de acceso no es correcta. Tocá tu inicial arriba a la derecha, salí y volvé a entrar.';
+    case 'api_key': return 'El servidor no tiene una API key de Claude válida. Revisá la variable ANTHROPIC_API_KEY en Cloudflare.';
+    case 'sin_saldo': return 'Se terminó el saldo de la API de Claude. Cargá crédito en console.anthropic.com.';
+    case 'overloaded': return 'Claude está saturado en este momento. Probá de nuevo en un rato.';
+    case 'offline': return 'No hay conexión con tu servidor. Fijate si tenés internet y probá de nuevo.';
+    default: return 'Algo falló en la conexión. Probá de nuevo.';
+  }
+}
+
+async function copiar(text) {
+  try { await navigator.clipboard.writeText(text); toast('Copiado. Pegalo en el chat'); return true; }
+  catch (e) { toast('No pude copiarlo solo: mantené apretado el texto'); return false; }
+}
+function seleccionar(el) {
+  if (!el) return;
+  try { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) { /* sin selección */ }
+}
+
+// ---------- Arranque ----------
+async function boot() {
+  const splash = $('.splash');
+  if (splash) {
+    let vista = false;
+    try { vista = sessionStorage.getItem('chamuyia.splash') === '1'; sessionStorage.setItem('chamuyia.splash', '1'); } catch (e) { /* sin almacenamiento */ }
+    if (vista) splash.remove();
+    else {
+      splash.addEventListener('animationend', e => { if (e.target === splash) splash.remove(); });
+      splash.addEventListener('click', () => splash.remove());
+      setTimeout(() => splash.remove(), 1500);
+    }
+  }
+  initStatic();
+  renderAll();
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function') { S.ready = true; setBanner('Esta app funciona dentro de claude.ai. Abrila desde ahí con tu cuenta.'); renderAll(); return; }
+  const [sample, db, user] = await Promise.all([c.use('sample'), c.use('db'), c.use('user')]);
+  S.sample = sample ? conNombre(sample) : null; S.user = user;
+  if (sample) S.limits = await sample.limits().catch(() => null);
+  // En una cuenta personal de Claude, solo el dueño puede guardar en la base de la app.
+  // Quien entra por el link guarda su perfil y su fichero en su propio navegador.
+  const duenio = user ? await user.isOwner() : false;
+  const uid = user ? await user.id() : null;
+  if (duenio && db && uid) { S.db = db; S.uid = uid; S.local = false; }
+  else if (sample) { S.db = crearDbLocal(); S.uid = 'local'; S.local = true; }
+  S.ready = true;
+  if (!sample) setBanner('No pude conectar con Claude desde esta vista. Abrí la app desde claude.ai con tu cuenta.');
+  else if (S.local && !S.db.persiste()) setBanner('Este navegador no deja guardar datos: lo que cargues se pierde al cerrar la app.');
+  mostrarSaludo();
+  applyImageLimits();
+  if (canSave()) {
+    let registro = false;
+    try { const snap = await base().get(); registro = !snap.exists || perfilVacio(snap.data()); }
+    catch (e) { console.warn('perfil', e); }
+    // La primera vez (perfil vacío) se arma el perfil en 3 pasos antes de entrar.
+    if (registro && S.sample) { mostrarRegistro(); renderAll(); return; }
+    suscribir();
+  }
+  renderAll();
+}
+
+// Base en el navegador, con la misma forma que la de claude.ai (doc, collection, orderBy, limit, onSnapshot).
+function crearDbLocal() {
+  const CLAVE = 'chamuyia.local';
+  let memoria = {}, persiste = true;
+  try { localStorage.getItem(CLAVE); } catch (e) { persiste = false; }
+  const leer = () => {
+    if (!persiste) return JSON.parse(JSON.stringify(memoria));
+    try { return JSON.parse(localStorage.getItem(CLAVE) || '{}'); } catch (e) { persiste = false; return JSON.parse(JSON.stringify(memoria)); }
+  };
+  const guardar = d => {
+    memoria = d;
+    if (persiste) { try { localStorage.setItem(CLAVE, JSON.stringify(d)); } catch (e) { persiste = false; } }
+  };
+  const oyentes = [];
+  const avisar = () => setTimeout(() => oyentes.slice().forEach(f => f()), 0);
+  const copia = d => JSON.parse(JSON.stringify(d));
+  const snapDoc = path => { const d = leer()[path]; return { id: path.split('/').pop(), exists: !!d, data: () => d, metadata: {} }; };
+  const escuchar = f => { oyentes.push(f); setTimeout(f, 0); return () => { const i = oyentes.indexOf(f); if (i >= 0) oyentes.splice(i, 1); }; };
+  function docRef(path) {
+    return {
+      id: path.split('/').pop(),
+      get: async () => snapDoc(path),
+      set: async d => { const db = leer(); db[path] = copia(d); guardar(db); avisar(); },
+      update: async d => { const db = leer(); if (!db[path]) throw { code: 'invalid_argument' }; db[path] = { ...db[path], ...copia(d) }; guardar(db); avisar(); },
+      delete: async () => { const db = leer(); delete db[path]; guardar(db); avisar(); },
+      onSnapshot: cb => escuchar(() => cb(snapDoc(path))),
+      collection: sub => colRef(path + '/' + sub),
+    };
+  }
+  function colRef(path, orden, lim) {
+    const consulta = () => {
+      const largo = path.split('/').length + 1;
+      let docs = Object.entries(leer()).filter(([k]) => k.startsWith(path + '/') && k.split('/').length === largo)
+        .map(([k, d]) => ({ id: k.split('/').pop(), exists: true, data: () => d, metadata: {} }));
+      if (orden) docs.sort((a, b) => ((a.data()[orden.f] || 0) - (b.data()[orden.f] || 0)) * (orden.dir === 'desc' ? -1 : 1));
+      if (lim) docs = docs.slice(0, lim);
+      return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: {} };
+    };
+    return {
+      doc: id => docRef(path + '/' + (id || Date.now().toString(36) + Math.random().toString(36).slice(2, 10))),
+      orderBy: (f, dir) => colRef(path, { f, dir }, lim),
+      limit: n => colRef(path, orden, n),
+      get: async () => consulta(),
+      onSnapshot: cb => escuchar(() => cb(consulta())),
+    };
+  }
+  return { doc: docRef, collection: p => colRef(p), persiste: () => persiste };
+}
+
+// Las instrucciones dicen "Nico": acá se cambia por el nombre de quien la usa.
+function personalizar(p) {
+  const n = (S.perfil.nombre || '').trim();
+  if (!n || n === 'Nico') return p;
+  return p.replace(/\bNico\b/g, () => n).replace(/\bNICO\b/g, () => n.toUpperCase());
+}
+function conNombre(sample) {
+  return { json: (prompt, opts) => sample.json(personalizar(prompt), opts), limits: () => sample.limits() };
+}
+function perfilVacio(d) {
+  d = d || {};
+  const ficha = typeof d.ficha === 'string' ? d.ficha.trim() : '';
+  return !str(d.nombre) && (!ficha || ficha === FICHA_PLANTILLA.trim()) && !(Array.isArray(d.ejemplos) && d.ejemplos.length);
+}
+function mostrarRegistro() {
+  $('#ob-donde').textContent = S.local
+    ? 'Lo que cargues se guarda en este navegador y solo lo ves vos. Si entrás desde otra compu o celular, arrancás de cero.'
+    : 'Lo que cargues se guarda en tu servidor: lo ves desde el celu y la compu con tu clave.';
+  $('#onboarding').hidden = false;
+  renderOb();
+  $('#ob-nombre').focus();
+}
+
+function applyImageLimits() {
+  const img = S.limits && S.limits.images;
+  for (const k of ['n', 'r', 'e', 'f', 'h', 'o']) {
+    const input = $('#' + k + '-files');
+    if (img) input.accept = img.mediaTypes.join(',');
+    else if (S.sample) {
+      $('#' + k + '-drop').classList.add('off'); input.disabled = true;
+      $('#' + k + '-drop-hint').textContent = k === 'n' ? 'Esta vista no puede mandar imágenes. Pegá el texto del chat en el campo de abajo.' : 'Esta vista no puede mandar imágenes.';
+    }
+  }
+}
+
+function suscribir() {
+  const ref = base();
+  ref.onSnapshot(snap => {
+    const d = snap.exists ? snap.data() : {};
+    S.perfil = {
+      nombre: typeof d.nombre === 'string' ? d.nombre : '',
+      ficha: typeof d.ficha === 'string' ? d.ficha : '',
+      aprendizajes: Array.isArray(d.aprendizajes) ? d.aprendizajes.map(String) : [],
+      ejemplos: Array.isArray(d.ejemplos) ? d.ejemplos.filter(e => e && typeof e.texto === 'string') : [],
+      correcciones: Array.isArray(d.correcciones) ? d.correcciones.filter(c => c && typeof c === 'object').map(c => ({ ...c, propuesta: String(c.propuesta || ''), suya: String(c.suya || ''), motivos: Array.isArray(c.motivos) ? c.motivos.map(String) : [] })) : [],
+      favoritas: Array.isArray(d.favoritas) ? d.favoritas.filter(f => f && typeof f.texto === 'string') : [],
+    };
+    S.perfilLoaded = true;
+    mostrarSaludo();
+    renderSiVisible('perfil'); renderSiVisible('chicas');
+  }, errDb);
+  ref.collection('chicas').orderBy('ultimaActividad', 'desc').onSnapshot(snap => {
+    S.chicas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderChicaSelects(); renderSiVisible('chicas'); renderPendientes();
+  }, errDb);
+  ref.collection('consultas').orderBy('creado', 'desc').limit(300).onSnapshot(snap => {
+    S.consultas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderSiVisible('chicas'); renderPendientes(); renderSiVisible('perfil');
+  }, errDb);
+}
+function errDb(e) {
+  console.warn('db', e);
+  if (e && e.code === 'revoked') setBanner('Se cortó el acceso a tus datos. Recargá la página.');
+  else if (e && e.code === 'unavailable') setBanner('Se cortó la conexión con tus datos. Recargá la página.');
+}
+
+function initStatic() {
+  $('#ob-campos').innerHTML = FICHA_CAMPOS.map(([pregunta, ej], i) => `<div class="field"><label class="label" for="ob-f${i}">${esc(pregunta)}</label><input type="text" id="ob-f${i}" maxlength="300" placeholder="${esc('Ej.: ' + ej)}"></div>`).join('');
+  $('#ob-go').addEventListener('click', terminarOnboarding);
+  $('#ob-msgs').addEventListener('input', () => { if (S.ob.paso === 2) renderOb(); });
+  $('#p-nombre').addEventListener('input', () => { S.fichaDirty = true; $('#p-ficha-st').textContent = 'Sin guardar'; });
+  $('#n-app').innerHTML = '<option value="">App (auto)</option>' + APPS.map(a => `<option>${a}</option>`).join('');
+  $('#r-app').innerHTML = ['Instagram', 'Bumble', 'Tinder', 'OkCupid', 'Hinge'].map(a => `<option>${a}</option>`).join('');
+  $('#b-app').innerHTML = Object.keys(LIMITES_BIO).map(a => `<option>${a}</option>`).join('');
+  $('#f-block').addEventListener('pointerdown', () => { S.pasteM = 'f'; });
+  $('#r-block').addEventListener('pointerdown', () => { S.pasteM = 'r'; });
+  $('#h-block').addEventListener('pointerdown', () => { S.pasteM = 'h'; });
+  document.addEventListener('input', e => { if (e.target.id === 'fb-texto' && S.nueva.fb) S.nueva.fb.texto = e.target.value; });
+  document.addEventListener('change', e => {
+    const o = e.target.dataset ? e.target.dataset.obext : undefined;
+    if (o !== undefined && S.ob.extraidos[Number(o)]) S.ob.extraidos[Number(o)].ok = e.target.checked;
+    const i = e.target.dataset ? e.target.dataset.ext : undefined;
+    if (i !== undefined && S.ej.extraidos && S.ej.extraidos[Number(i)]) S.ej.extraidos[Number(i)].ok = e.target.checked;
+  });
+  for (const k of ['n', 'r', 'e', 'f', 'h', 'o']) {
+    const input = $('#' + k + '-files'), drop = $('#' + k + '-drop');
+    input.addEventListener('change', () => { addFiles(k, input.files); input.value = ''; });
+    drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+    drop.addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(k, e.dataTransfer.files); });
+  }
+  $('#n-chica').addEventListener('change', e => { S.nueva.chicaId = e.target.value; S.nueva.consultaId = null; renderNuevaChica(); });
+  $('#c-chica').addEventListener('change', e => { S.citas.chicaId = e.target.value; });
+  $('#p-ficha').addEventListener('input', () => { S.fichaDirty = true; $('#p-ficha-st').textContent = 'Sin guardar'; });
+  document.addEventListener('change', onChangeDetalle);
+  document.addEventListener('click', onClick);
+  document.addEventListener('click', e => { if (!e.target.closest('.cuenta')) cerrarMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#menu-cuenta').hidden) { cerrarMenu(); $('#me').focus(); } });
+  document.addEventListener('paste', onPaste);
+  setInterval(() => {
+    document.querySelectorAll('[data-since]').forEach(el => { el.textContent = Math.max(0, Math.round((Date.now() - Number(el.dataset.since)) / 1000)) + ' s'; });
+  }, 1000);
+}
+
+function onPaste(e) {
+  const files = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  if (!$('#onboarding').hidden) { if (S.ob.paso === 2) { e.preventDefault(); addFiles('o', files); } return; }
+  if (S.tab === 'nueva') { e.preventDefault(); addFiles('n', files); }
+  else if (S.tab === 'perfil') { e.preventDefault(); addFiles('e', files); }
+  else if (S.tab === 'mejorar') { e.preventDefault(); addFiles(S.pasteM, files); }
+}
+
+function addFiles(k, list) {
+  const st = filesDe(k);
+  const img = S.limits && S.limits.images;
+  const max = img ? img.maxCount : 5;
+  for (const f of list) {
+    if (!f.type.startsWith('image/')) continue;
+    if (img && !img.mediaTypes.includes(f.type)) { toast('Ese formato no va. Usá JPG, PNG o WebP'); continue; }
+    if (img && f.size > img.maxInputBytes) { toast('Esa imagen es muy pesada'); continue; }
+    if (st.files.length >= max) { toast(`Máximo ${max} capturas por vez`); break; }
+    st.files.push({ file: f, url: URL.createObjectURL(f) });
+  }
+  renderThumbs(k);
+  if (k === 'o') renderOb();
+}
+function quitarFile(arg) {
+  const [k, i] = arg.split(':');
+  const st = filesDe(k);
+  const [f] = st.files.splice(Number(i), 1);
+  if (f) URL.revokeObjectURL(f.url);
+  renderThumbs(k);
+  if (k === 'o') renderOb();
+}
+
+// ---------- Clicks ----------
+function mostrarSaludo() {
+  const n = (S.perfil.nombre || '').trim();
+  $('#me').textContent = n ? inicial(n) : '?';
+  $('#t-chicas').textContent = n ? `Hola, ${n}` : 'Hola';
+  $('#menu-nombre').textContent = n || 'Tu cuenta';
+  $('#menu-donde').textContent = S.local ? 'Tus datos se guardan en este navegador' : 'Sincronizado con tu servidor';
+}
+
+// Menú de la cuenta (el círculo con la inicial).
+function abrirMenu() {
+  $('#menu-cuenta').hidden = false;
+  $('#me').setAttribute('aria-expanded', 'true');
+  $('#menu-cuenta [role="menuitem"]').focus();
+}
+function cerrarMenu() {
+  if ($('#menu-cuenta').hidden) return;
+  $('#menu-cuenta').hidden = true;
+  $('#menu-aviso').hidden = true;
+  $('#menu-cuenta .menu-salir').setAttribute('aria-expanded', 'false');
+  $('#me').setAttribute('aria-expanded', 'false');
+}
+
+function onClick(e) {
+  const t = e.target.closest('[data-act]');
+  if (!t || t.disabled) return;
+  const a = t.dataset.act, arg = t.dataset.arg || '', id = t.dataset.id || '';
+  switch (a) {
+    case 'tab': irA(arg); break;
+    case 'ob-seguir': obSeguir(); break;
+    case 'ob-atras': irAPaso(S.ob.paso - 1); break;
+    case 'ob-leer': leerCapturasRegistro(); break;
+    case 'menu-cuenta': $('#menu-cuenta').hidden ? abrirMenu() : cerrarMenu(); break;
+    case 'menu-perfil': cerrarMenu(); irA('perfil'); window.scrollTo(0, 0); break;
+    case 'menu-salir': { const av = $('#menu-aviso'); av.hidden = !av.hidden; t.setAttribute('aria-expanded', String(!av.hidden)); break; }
+    case 'menu-cerrar': cerrarMenu(); break;
+    case 'menu-desconectar': e.preventDefault(); cerrarMenu(); if (window.chamuyia) window.chamuyia.salir(); break;
+    case 'menu-exportar': cerrarMenu(); if (window.chamuyia) { window.chamuyia.exportar(); toast('Copia descargada'); } break;
+    case 'menu-importar': cerrarMenu(); if (window.chamuyia) window.chamuyia.importar(); break;
+    case 'tipo': S.nueva.tipo = arg; renderTipo(); break;
+    case 'quitar': quitarFile(arg); break;
+    case 'consultar-go': consultar(null); break;
+    case 'ajuste': consultar(arg); break;
+    case 'usar': usarVariante(Number(arg)); break;
+    case 'nueva-reset': resetNueva(); window.scrollTo(0, 0); break;
+    case 'stop': { const st = { nueva: S.nueva, citas: S.citas, aprend: S.aprend, rev: S.rev, ej: S.ej, foto: S.foto, hist: S.hist, wa: S.wa, bio: S.bio, ob: S.ob }[arg]; if (st && st.ctl) st.ctl.abort(); break; }
+    case 'res': setResultado(id, arg); break;
+    case 'abrir': S.chicaAbierta = id; renderChicas(); window.scrollTo(0, 0); break;
+    case 'ff': toggleCarpeta(id); break;
+    case 'ff-orden': setFichero('orden', arg); break;
+    case 'ff-filtro': setFichero('filtro', arg); break;
+    case 'cerrar': S.chicaAbierta = null; $('#ch-detail').dataset.id = ''; renderChicas(); break;
+    case 'estado': setEstado(arg); break;
+    case 'consultar-con': consultarCon(id); break;
+    case 'citas-con': S.citas.chicaId = id; renderChicaSelects(); irA('citas'); break;
+    case 'usada-tarde': marcarUsada(id, Number(arg)); break;
+    case 'borrar': borrarChica(t); break;
+    case 'presu': S.citas.presupuesto = arg; renderCitas(); break;
+    case 'cuando': S.citas.cuando = arg; renderCitas(); break;
+    case 'citas-go': pedirCitas(); break;
+    case 'copiar': copiarDe(arg); break;
+    case 'ficha-save': guardarFicha(); break;
+    case 'aprend-go': sacarConclusiones(); break;
+    case 'rev-go': revisarPerfil(); break;
+    case 'destino': S.foto.destino = arg; renderFoto(); break;
+    case 'foto-go': revisarFotos(); break;
+    case 'donde': S.hist.donde = arg; renderHist(); break;
+    case 'hist-go': pedirHistorias(); break;
+    case 'wa-go': pedirFrases(); break;
+    case 'btono': S.bio.tono = arg; renderBio(); break;
+    case 'bio-go': pedirBio(); break;
+    case 'fb-open': S.nueva.fb = { open: arg === 'all' ? 'all' : Number(arg), motivos: [], texto: '' }; renderNuevaOut(); break;
+    case 'fb-motivo': { const fb = S.nueva.fb; if (!fb) break; fb.motivos = fb.motivos.includes(arg) ? fb.motivos.filter(m => m !== arg) : [...fb.motivos, arg]; renderNuevaOut(); break; }
+    case 'fb-cancel': S.nueva.fb = null; renderNuevaOut(); break;
+    case 'fb-save': guardarFeedback(false); break;
+    case 'fb-usar': guardarFeedback(true); break;
+    case 'ej-add': agregarEjemplosTexto(); break;
+    case 'ej-extraer': extraerEjemplos(); break;
+    case 'ej-guardar': guardarExtraidos(); break;
+    case 'ej-del': borrarItem('ejemplos', Number(arg)); break;
+    case 'corr-del': borrarItem('correcciones', Number(arg)); break;
+    case 'fav-del': borrarItem('favoritas', Number(arg)); break;
+    case 'like': toggleLike(Number(arg)); break;
+  }
+}
+
+const RENDER_TAB = { chicas: () => renderChicas(), perfil: () => renderPerfil() };
+function renderSiVisible(tab) {
+  if (S.tab === tab) RENDER_TAB[tab]();
+  else S.sucio[tab] = true;
+}
+function irA(tab) {
+  S.tab = tab;
+  if (S.sucio[tab]) { S.sucio[tab] = false; RENDER_TAB[tab](); }
+  renderTabs(); window.scrollTo(0, 0);
+  if (tab === 'chicas') { animarFichero(); contarKpis(); animarTorta(); }
+}
+const anim = k => { const v = S.anim[k]; S.anim[k] = false; return v ? ' stagger' : ''; };
+
+async function copiarDe(elId) {
+  const el = document.getElementById(elId); if (!el) return;
+  const bs = el.querySelectorAll('.bubble');
+  const text = bs.length ? [...bs].map(b => b.textContent).join('\n') : el.textContent;
+  if (!(await copiar(text))) seleccionar(el);
+}
+
+// ---------- Prompts ----------
+function bloqueVoz() {
+  const ej = S.perfil.ejemplos.slice(0, 30).map(e => '- ' + e.texto);
+  const co = S.perfil.correcciones.slice(0, 15).map(c => `- Le propusiste: "${c.propuesta}"${c.motivos.length ? '. No le gustó: ' + c.motivos.join(', ').toLowerCase() : ''}${c.suya ? `. Él lo diría: "${c.suya}"` : ''}`);
+  const partes = [];
+  if (ej.length) partes.push(`ASÍ ESCRIBE NICO DE VERDAD (mensajes reales suyos: es tu referencia principal de voz. Copiá el largo, el vocabulario y la puntuación, no las frases)\n${ej.join('\n')}`);
+  const fav = S.perfil.favoritas.slice(0, 15).map(f => '- ' + f.texto);
+  if (fav.length) partes.push(`OPCIONES TUYAS QUE A NICO LE GUSTARON (es el registro que busca: apuntá para este lado sin repetirlas)\n${fav.join('\n')}`);
+  if (co.length) partes.push(`LO QUE NICO YA RECHAZÓ (no repitas estos errores)\n${co.join('\n')}`);
+  return partes.join('\n\n');
+}
+function bloqueFicha() {
+  let h = `FICHA DE NICO (datos suyos: usalos solo si vienen al caso y no inventes otros)\n${S.perfil.ficha.trim() || '(vacía)'}`;
+  if (S.perfil.aprendizajes.length) h += `\n\nLO QUE APRENDIMOS DE SUS RESULTADOS (tenelo muy en cuenta)\n- ${S.perfil.aprendizajes.join('\n- ')}`;
+  return h;
+}
+function bloqueChica(chica) {
+  if (!chica) return 'SOBRE ELLA\nTodavía no hay nada guardado de ella.';
+  const hist = S.consultas.filter(c => c.chicaId === chica.id && usada(c)).slice(0, 6).reverse();
+  const lineas = [`Nombre: ${chica.nombre || 'sin nombre'} · App: ${chica.app || 'no sé'} · Estado: ${ESTADOS[chica.estado] || 'Hablando'}`];
+  if (chica.notas) lineas.push('Notas de Nico: ' + chica.notas);
+  if (chica.resumen) lineas.push('Lo que sabemos: ' + chica.resumen);
+  if (hist.length) lineas.push('Mensajes que Nico ya le mandó (de más viejo a más nuevo):\n' + hist.map(c => `- ${fechaCorta(c.creado)}: "${msgDe(c)}" → ${c.resultado ? RESULTADOS[c.resultado] : 'sin resultado todavía'}`).join('\n'));
+  return 'SOBRE ELLA\n' + lineas.join('\n');
+}
+function promptConsulta({ tipo, chica, contexto, nImgs, ajuste, previo }) {
+  const p = [ESTILO, bloqueVoz(), bloqueFicha(), bloqueChica(chica), 'PEDIDO\n' + TIPOS[tipo].pedido];
+  p.push(nImgs ? `Te paso ${nImgs === 1 ? 'una captura' : nImgs + ' capturas'} del chat o del perfil de ella. Leelas con atención.` : 'No hay capturas: trabajá con lo que cuenta Nico.');
+  if (contexto) p.push('LO QUE PIDE NICO AHORA (esto manda por sobre todo lo demás)\n' + contexto);
+  if (ajuste && previo) p.push(`YA LE PROPUSISTE ESTAS\n${previo.variantes.map(v => `- (${v.tono}) ${v.mensajes.join(' / ')}`).join('\n')}\n\nAJUSTE QUE PIDE NICO\n${AJUSTES[ajuste].pedido}`);
+  p.push(FORMATO_CONSULTA);
+  return p.filter(Boolean).join('\n\n');
+}
+function promptCitas({ chica, zona, presupuesto, cuando }) {
+  return [VOZ_CORTA, bloqueVoz(), bloqueFicha(), bloqueChica(chica), `PEDIDO
+Nico quiere ideas para una salida${chica ? ' con ella' : ''} en Buenos Aires.
+Zona: ${zona || 'la que te parezca cómoda según la ficha'}
+Presupuesto: ${presupuesto}
+Cuándo: ${cuando}
+
+Armá 3 planes distintos entre sí, concretos y pensados para una primera o segunda salida. Tené en cuenta los gustos de Nico${chica ? ' y lo que sabemos de ella' : ''}.
+LUGARES: cada plan lleva 1 o 2 lugares reales, con su nombre. Nada de "un bar en Palermo".
+- Elegí lugares que conozcas bien y que lleven años abiertos: los de la Guía Michelin de Buenos Aires (con estrella, Bib Gourmand o recomendados), bares notables y clásicos porteños, y lugares muy bien puntuados en Google Maps. En "dato" poné la distinción o lo que lo hace bueno solo si lo sabés de verdad, y dejá "fuente" vacío.
+- Que queden en la zona pedida o cerca, que cuadren con el presupuesto y que estén abiertos en el momento elegido.
+- No inventes lugares ni datos. Si no sabés la dirección exacta, poné solo el barrio.
+Las descripciones escribilas claras y en rioplatense. El mensaje para invitarla, con la voz de Nico y dejándole elegir el día o el lugar.`, `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{"planes": [{"titulo": "nombre corto del plan", "plan": "qué hacen, en 1 o 2 líneas", "lugares": [{"nombre": "nombre real del lugar", "barrio": "barrio", "direccion": "calle y altura si la sabés, si no vacío", "tipo": "bar, restaurante, café, museo...", "precio": "$, $$ o $$$", "dato": "por qué es bueno, en una línea: distinción de la Guía Michelin, puntaje en Google, qué pedir", "fuente": "link de donde sacaste el dato, o vacío"}], "porque": "por qué le puede gustar a ella, en una línea", "mensaje": "el mensaje para invitarla"}]}`].join('\n\n');
+}
+function promptRevision(app) {
+  const pedido = app === 'Instagram' ? `PEDIDO
+Nico te pasa capturas de su Instagram. Revisalo pensando en una chica que lo acaba de conocer en una app de citas y entra a mirarle el perfil.
+- Qué funciona: hasta 3 cosas, concretas.
+- Qué cambiaría: hasta 4 cosas concretas (foto de perfil, bio, destacadas, qué publicaciones archivar o fijar, orden del feed), con el porqué en pocas palabras.
+- Textos listos para copiar: 2 o 3 opciones de bio con su voz, de no más de 150 caracteres, y nombres para las destacadas si hace falta.
+- Un comentario sobre las fotos del feed: cuáles suman, cuáles sacaría y qué tipo de foto le falta.
+En "impresion", qué transmite el perfil en los primeros 5 segundos.` : `PEDIDO
+Nico te pasa capturas de su propio perfil en ${app}. Revisalo como alguien que sabe de apps de citas y conoce su estilo.
+- Qué funciona: hasta 3 cosas, concretas.
+- Qué cambiaría: hasta 4 cosas, concretas, con el porqué en pocas palabras.
+- Textos listos para copiar para la bio y para los prompts que se ven, con su voz: cortos, específicos y con un gancho para que le escriban. Nada genérico tipo "me gusta viajar y salir con amigos".
+- Un comentario sobre las fotos si se ven: orden, cuál sacaría o qué falta.`;
+  return [ESTILO, bloqueVoz(), bloqueFicha(), pedido, `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{"impresion": "una línea con tu impresión general", "funciona": ["..."], "cambiaria": ["..."], "propuestas": [{"donde": "Bio, el nombre del prompt o de la destacada", "texto": "..."}], "fotos": "comentario sobre las fotos, o vacío"}`].join('\n\n');
+}
+function promptFoto(destino, n) {
+  const para = { ig: 'Instagram', app: 'apps de citas', ambas: 'Instagram y apps de citas' }[destino];
+  const usos = (destino !== 'app' ? '- Para Instagram: decí si suma al feed, si va mejor como historia o si no la subirías.\n' : '')
+    + (destino !== 'ig' ? '- Para apps de citas: decí si sirve como foto principal (cara clara, solo, buena luz), como secundaria o si no conviene.\n' : '');
+  return [`Sos el asesor de imagen de Nico. Te paso ${n === 1 ? 'una foto suya' : n + ' fotos suyas'} y quiere saber si ${n === 1 ? 'está buena' : 'están buenas'} para ${para}.
+Mirá lo que importa en una foto: luz, encuadre y recorte, nitidez, expresión y mirada, fondo y contexto, ropa, si se lo distingue bien a él o hay mucha gente, si parece natural o forzada y qué transmite de él (planes, gustos, personalidad).
+${usos}Sé honesto y concreto, como un amigo que sabe de fotos: si no está buena, decilo y explicá por qué. Hablá de la foto (luz, pose, encuadre, contexto, ropa), nunca juzgues su cuerpo ni su cara. Escribí en español rioplatense, hablándole de vos, con frases cortas.`,
+  VOZ_CORTA + ' Esto vale para los captions de Instagram: como mucho un emoji y nada de frases motivacionales.',
+  'FICHA DE NICO (para saber qué le gusta y qué quiere transmitir)\n' + (S.perfil.ficha.trim() || '(vacía)'),
+  `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{"fotos": [{"veredicto": "subila", "puntaje": 7, "uso": "dónde la usarías, en una línea", "funciona": ["..."], "cambiaria": ["..."], "captions": ["...", "..."]}], "orden": "..."}
+Una entrada por foto, en el mismo orden en que te las paso. "veredicto" es "subila", "con cambios" o "mejor no". "puntaje" va de 1 a 10. "funciona" y "cambiaria", hasta 3 cosas cada uno. "captions": 2 opciones cortas solo si es para Instagram y la foto va; si no, lista vacía. "orden": si hay varias fotos, cuál va primero y por qué, en una línea; si hay una sola, vacío.`].join('\n\n');
+}
+function promptHistorias(donde, texto, nImgs) {
+  const para = { wa: 'sus estados de WhatsApp', ig: 'sus historias de Instagram', ambos: 'sus estados de WhatsApp y sus historias de Instagram' }[donde];
+  const fotos = nImgs ? `\n- Te paso ${nImgs === 1 ? 'una foto' : nImgs + ' fotos'} que tiene para subir: decí si va cada una y qué texto le pondrías.` : '';
+  return [`Sos el asesor de imagen de Nico. Quiere ideas de qué subir a ${para}. Lo ven sus contactos, incluidas chicas con las que está hablando, así que la idea es que muestre su vida real y les dé algo fácil para responderle: planes, cosas que hace, gustos, humor.
+- Ideas concretas y realistas para esta semana, basadas en su ficha y en lo que cuenta ahora. Nada que no haga de verdad.
+- Nada de indirectas, frases motivacionales ni mostrarse pendiente de alguien.
+- Que no parezca armado: lo que funciona es natural y con un toque de humor.
+- Para cada idea: qué subir y cómo sacarla, el texto para ponerle (corto y con su voz; vacío si la foto habla sola) y, si es para Instagram, un sticker de encuesta o pregunta que invite a contestar.${fotos}`,
+  texto ? 'LO QUE CUENTA NICO AHORA\n' + texto : '',
+  VOZ_CORTA, bloqueVoz(), 'FICHA DE NICO\n' + (S.perfil.ficha.trim() || '(vacía)'),
+  `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{"ideas": [{"titulo": "nombre corto", "que": "qué subir y cómo sacarla, en 1 o 2 líneas", "texto": "texto para ponerle, o vacío", "extra": "sticker de encuesta o pregunta, o vacío", "porque": "por qué le da pie a que le escriban, en una línea"}], "fotos": [{"va": true, "comentario": "una línea", "texto": "texto para ponerle, o vacío"}]}
+Entre 3 y 5 ideas. "fotos": una entrada por foto, en el mismo orden en que te las paso; lista vacía si no hay fotos.`].filter(Boolean).join('\n\n');
+}
+function promptFrase() {
+  return [`Proponele a Nico 5 frases para el "Info" de su perfil de WhatsApp, lo que aparece debajo de su nombre. Máximo 139 caracteres cada una, idealmente mucho menos.
+Que digan algo de él con humor o con un dato propio de la ficha, que suenen naturales y que no sean frases hechas, motivacionales ni indirectas. Variá el estilo: alguna absurda, alguna con un dato suyo y alguna mínima.`,
+  VOZ_CORTA, bloqueVoz(), 'FICHA DE NICO\n' + (S.perfil.ficha.trim() || '(vacía)'),
+  'FORMATO\nRespondé solo con un objeto JSON: {"frases": ["...", "..."]}'].join('\n\n');
+}
+function promptBio(app, tono, texto) {
+  const tonoTxt = tono === 'mezcla'
+    ? 'mezclá estilos: una graciosa, una directa, una con un dato propio bien concreto y una más tranqui'
+    : `${TONOS_BIO[tono].toLowerCase()}: que todas las opciones vayan por ese lado`;
+  return [`Ayudá a Nico a armar su estado para ${app}: la bio o descripción que se ve en su perfil.
+${LIMITES_BIO[app].txt}
+- Tiene que sonar a él, con la misma voz que sus mensajes reales (abajo tenés ejemplos).
+- Específico y con ganchos para que le escriban: datos concretos de su ficha (que cocina, los 27 amigos, la música, el boxeo, Finlandia si suma). Nada genérico tipo "me gusta viajar y salir con amigos".
+- Nada de listas de requisitos, "no busco dramas", frases motivacionales ni emojis de más (como mucho uno).
+- No inventes datos que no estén en la ficha.
+- Tono: ${tonoTxt}.
+Además, proponé 3 respuestas a prompts que existan de verdad en ${app}, cortas y con gancho.`,
+  texto ? 'LO QUE TIENE AHORA O LO QUE QUIERE QUE DIGA\n' + texto : '',
+  VOZ_CORTA, bloqueVoz(), 'FICHA DE NICO\n' + (S.perfil.ficha.trim() || '(vacía)'),
+  `FORMATO
+Respondé solo con un objeto JSON, sin texto antes ni después:
+{"estados": [{"enfoque": "de qué va, en 2 a 5 palabras", "texto": "el estado listo para copiar", "porque": "por qué invita a escribirle, en una línea"}], "prompts": [{"prompt": "el prompt de la app", "respuesta": "..."}]}
+4 estados distintos entre sí.`].filter(Boolean).join('\n\n');
+}
+function promptAprendizajes(datos, corr, favs) {
+  return `Sos el asistente de chamuyo de Nico. Abajo están los mensajes de levante que usó con su resultado, las opciones tuyas que le gustaron y las que rechazó con el porqué. Sacá entre 3 y 6 aprendizajes concretos sobre cómo escribe y qué le funciona: tono, largo, vocabulario, si propone o pregunta, qué le suena falso. Basate solo en estos datos y, si son pocos, decilo con cautela ("por ahora parece que..."). Cada aprendizaje en una línea corta, en español rioplatense, hablándole a Nico de vos.
+
+MENSAJES USADOS (pedido | tono | mensaje | resultado)
+${datos.join('\n') || '(todavía ninguno)'}
+
+OPCIONES QUE LE GUSTARON (tono | mensaje)
+${favs.join('\n') || '(ninguna)'}
+
+OPCIONES QUE RECHAZÓ
+${corr.join('\n') || '(ninguna)'}
+
+APRENDIZAJES ANTERIORES (sacados de sus chats reales: mantené los que los datos nuevos no contradigan)
+${S.perfil.aprendizajes.map(a => '- ' + a).join('\n') || '(ninguno)'}
+
+FORMATO
+Respondé solo con un objeto JSON: {"aprendizajes": ["...", "..."]}`;
+}
+
+function normalizar(raw) {
+  const r = raw && typeof raw === 'object' ? raw : {};
+  const variantes = (Array.isArray(r.variantes) ? r.variantes : []).slice(0, 3).map(v => {
+    const ms = Array.isArray(v && v.mensajes) ? v.mensajes : [v && (v.mensajes || v.texto)];
+    return { tono: TONOS[v && v.tono] ? v.tono : 'absurdo', mensajes: ms.map(str).filter(Boolean).slice(0, 3) };
+  }).filter(v => v.mensajes.length);
+  if (!variantes.length) throw { code: 'invalid_json' };
+  let rec = Number(r.recomendada);
+  if (!Number.isInteger(rec) || rec < 0 || rec >= variantes.length) rec = 0;
+  return { lectura: str(r.lectura), transcripcion: str(r.transcripcion), nombre: str(r.nombre), app: str(r.app), variantes, recomendada: rec, porque: str(r.porque), resumen: str(r.resumen) };
+}
+
+// ---------- Consulta ----------
+async function consultar(ajuste) {
+  const n = S.nueva;
+  if (n.running) return;
+  if (!S.sample) { n.error = 'No hay conexión con Claude en esta vista.'; renderNuevaOut(); return; }
+  if (ajuste && !n.result) return;
+  const contexto = $('#n-contexto').value.trim();
+  if (!ajuste && !n.files.length && !contexto) { toast('Subí una captura o contame la situación'); return; }
+  const prompt = promptConsulta({ tipo: n.tipo, chica: chicaPorId(n.chicaId), contexto, nImgs: n.files.length, ajuste, previo: ajuste ? n.result : null });
+  n.ctl = new AbortController(); n.running = true; n.since = Date.now(); n.error = ''; n.saveError = '';
+  renderNuevaOut();
+  $('#n-out').scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  try {
+    const opts = { cache: false, signal: n.ctl.signal, effort: 'low' };
+    if (n.files.length) opts.images = n.files.map(f => f.file);
+    const r = normalizar(await S.sample.json(prompt, opts));
+    n.result = r; n.enviada = null; n.running = false; n.fb = null; n.rechazadas = []; n.likes = []; S.anim.nueva = true;
+    renderNuevaOut();
+    await guardarConsulta(r, contexto, !!ajuste);
+  } catch (e) {
+    const m = errorCopy(e); if (m) n.error = m;
+  } finally {
+    n.running = false; n.ctl = null; renderNuevaOut();
+  }
+}
+
+async function guardarConsulta(r, contexto, esAjuste) {
+  if (!canSave()) return;
+  const n = S.nueva, now = Date.now();
+  try {
+    if (esAjuste && n.consultaId) {
+      await base().collection('consultas').doc(n.consultaId).update({ lectura: r.lectura, variantes: r.variantes, recomendada: r.recomendada, porque: r.porque, enviada: null, rechazadas: [], likes: [] });
+      return;
+    }
+    const chicas = base().collection('chicas');
+    let chicaId = n.chicaId;
+    if (!chicaId) {
+      const ref = chicas.doc();
+      const appSel = $('#n-app').value;
+      await ref.set({ nombre: $('#n-nombre').value.trim() || r.nombre || 'Sin nombre', app: appSel || matchApp(r.app) || 'Otra', estado: 'hablando', notas: '', resumen: r.resumen, creado: now, ultimaActividad: now });
+      chicaId = ref.id; n.chicaId = chicaId;
+      $('#n-nombre').value = ''; $('#n-app').value = '';
+      renderChicaSelects(); renderNuevaChica();
+    } else {
+      const patch = { ultimaActividad: now };
+      if (r.resumen) patch.resumen = r.resumen;
+      await chicas.doc(chicaId).update(patch);
+    }
+    const ref = base().collection('consultas').doc();
+    const enviada = Number.isInteger(n.enviada) ? n.enviada : null;
+    await ref.set({ chicaId, tipo: n.tipo, contexto, lectura: r.lectura, transcripcion: r.transcripcion, variantes: r.variantes, recomendada: r.recomendada, porque: r.porque, enviada, rechazadas: [], likes: [], resultado: null, creado: now });
+    n.consultaId = ref.id;
+    if (Number.isInteger(n.enviada) && n.enviada !== enviada) await ref.update({ enviada: n.enviada });
+  } catch (e) {
+    console.warn('guardar', e);
+    n.saveError = e && e.code === 'quota_exceeded' ? 'Se llenó el historial. Borrá chicas viejas para seguir guardando.' : 'No se pudo guardar en el historial.';
+  }
+}
+
+async function usarVariante(i) {
+  const n = S.nueva; const v = n.result && n.result.variantes[i]; if (!v) return;
+  const ok = await copiar(v.mensajes.join('\n'));
+  n.enviada = i; renderNuevaOut();
+  if (!ok) seleccionar(document.getElementById('var-' + i));
+  if (canSave() && n.consultaId) {
+    try { await base().collection('consultas').doc(n.consultaId).update({ enviada: i }); }
+    catch (e) { console.warn(e); }
+  }
+}
+
+function resetNueva() {
+  const n = S.nueva;
+  if (n.ctl) n.ctl.abort();
+  n.files.forEach(f => URL.revokeObjectURL(f.url));
+  Object.assign(n, { chicaId: '', files: [], result: null, consultaId: null, enviada: null, error: '', saveError: '', fb: null, rechazadas: [], likes: [] });
+  $('#n-contexto').value = ''; $('#n-nombre').value = ''; $('#n-app').value = '';
+  renderChicaSelects(); renderNuevaChica(); renderThumbs('n'); renderNuevaOut();
+}
+
+function consultarCon(id) {
+  resetNueva(); S.nueva.chicaId = id;
+  renderChicaSelects(); renderNuevaChica(); irA('nueva');
+}
+
+// ---------- Aprender cómo escribe ----------
+async function guardarPerfil(patch) {
+  await base().update({ ...patch, actualizado: Date.now() });
+}
+
+function sumarEjemplos(textos, origen) {
+  const vistos = new Set(S.perfil.ejemplos.map(e => e.texto.toLowerCase()));
+  const nuevos = [];
+  for (const t of textos.map(s => String(s).trim()).filter(Boolean)) {
+    const k = t.toLowerCase();
+    if (vistos.has(k)) continue;
+    vistos.add(k);
+    nuevos.push({ texto: t.slice(0, 300), origen, fecha: Date.now() });
+  }
+  return { lista: [...nuevos, ...S.perfil.ejemplos].slice(0, 80), n: nuevos.length };
+}
+
+async function guardarFeedback(usarMia) {
+  const n = S.nueva, fb = n.fb;
+  if (!fb || !n.result) return;
+  const texto = ($('#fb-texto').value || '').trim();
+  if (usarMia && !texto) { toast('Escribí cómo lo dirías vos'); return; }
+  if (!fb.motivos.length && !texto) { toast('Elegí qué no te cerró o escribí tu versión'); return; }
+  const copiado = usarMia ? copiar(texto) : null;
+  const propias = n.result.variantes.map((v, i) => i).filter(i => n.result.variantes[i].tono !== 'propia');
+  const vs = fb.open === 'all' ? propias.map(i => n.result.variantes[i]) : [n.result.variantes[fb.open]];
+  const corr = { propuesta: vs.map(v => v.mensajes.join(' / ')).join(' | '), motivos: fb.motivos.slice(), suya: texto, fecha: Date.now() };
+  if (fb.open === 'all') n.rechazadas = propias;
+  else if (!n.rechazadas.includes(fb.open)) n.rechazadas = [...n.rechazadas, fb.open];
+  if (usarMia) {
+    n.result.variantes.push({ tono: 'propia', mensajes: texto.split('\n').map(s => s.trim()).filter(Boolean) });
+    n.enviada = n.result.variantes.length - 1;
+  }
+  n.fb = null;
+  renderNuevaOut();
+  if (copiado && !(await copiado)) seleccionar(document.getElementById('var-' + n.enviada));
+  if (!canSave()) return;
+  try {
+    const patch = { correcciones: [corr, ...S.perfil.correcciones].slice(0, 40) };
+    if (texto) patch.ejemplos = sumarEjemplos(texto.split('\n'), 'corrección').lista;
+    await guardarPerfil(patch);
+    if (n.consultaId) await base().collection('consultas').doc(n.consultaId).update(usarMia ? { variantes: n.result.variantes, enviada: n.enviada, rechazadas: n.rechazadas } : { rechazadas: n.rechazadas });
+    toast(usarMia ? 'Copiada y anotada. La próxima lo tengo en cuenta' : 'Anotado. La próxima lo tengo en cuenta');
+  } catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function toggleLike(i) {
+  const n = S.nueva; const v = n.result && n.result.variantes[i];
+  if (!v || v.tono === 'propia') return;
+  const texto = v.mensajes.join(' / ');
+  const on = !n.likes.includes(i);
+  n.likes = on ? [...n.likes, i] : n.likes.filter(x => x !== i);
+  if (on && n.fb && n.fb.open === i) n.fb = null;
+  const boton = document.querySelector(`[data-act=like][data-arg="${i}"]`);
+  const rect = boton && boton.getBoundingClientRect();
+  n.pop = on ? i : null;
+  renderNuevaOut();
+  n.pop = null;
+  if (on) corazones(rect);
+  if (!canSave()) return;
+  const sin = S.perfil.favoritas.filter(f => f.texto !== texto);
+  const favoritas = on ? [{ texto, tono: v.tono, tipo: n.tipo, fecha: Date.now() }, ...sin].slice(0, 40) : sin;
+  try {
+    await guardarPerfil({ favoritas });
+    if (n.consultaId) await base().collection('consultas').doc(n.consultaId).update({ likes: n.likes });
+    toast(on ? 'Anotado: la próxima voy más por este lado' : 'Sacada de las que te gustaron');
+  } catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function agregarEjemplosTexto() {
+  if (!canSave()) return;
+  const ta = $('#e-texto');
+  const { lista, n } = sumarEjemplos(ta.value.split('\n'), 'pegado');
+  if (!n) { toast(ta.value.trim() ? 'Esos ya estaban guardados' : 'Pegá al menos un mensaje'); return; }
+  try { await guardarPerfil({ ejemplos: lista }); ta.value = ''; toast(n === 1 ? 'Mensaje guardado' : `${n} mensajes guardados`); }
+  catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function extraerEjemplos() {
+  const st = S.ej;
+  if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderEj(); return; }
+  if (!st.files.length) { toast('Subí al menos una captura'); return; }
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = ''; st.extraidos = null;
+  renderEj();
+  try {
+    const raw = await S.sample.json(PROMPT_EXTRAER, { cache: false, signal: st.ctl.signal, modelTier: 'quick', images: st.files.map(f => f.file) });
+    const ms = (raw && Array.isArray(raw.mensajes) ? raw.mensajes : []).map(str).filter(Boolean).slice(0, 40);
+    if (ms.length) st.extraidos = ms.map(t => ({ texto: t, ok: true }));
+    else st.error = 'No encontré mensajes tuyos en esas capturas.';
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderEj(); }
+}
+
+async function guardarExtraidos() {
+  const st = S.ej;
+  if (!st.extraidos || !canSave()) return;
+  const { lista, n } = sumarEjemplos(st.extraidos.filter(x => x.ok).map(x => x.texto), 'captura');
+  try {
+    if (n) await guardarPerfil({ ejemplos: lista });
+    toast(n ? (n === 1 ? 'Mensaje guardado' : `${n} mensajes guardados`) : 'Esos ya estaban guardados');
+    st.extraidos = null;
+    st.files.forEach(f => URL.revokeObjectURL(f.url)); st.files = [];
+    renderThumbs('e'); renderEj();
+  } catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function borrarItem(campo, i) {
+  if (!canSave()) return;
+  const arr = S.perfil[campo].slice();
+  arr.splice(i, 1);
+  try { await guardarPerfil({ [campo]: arr }); }
+  catch (e) { console.warn(e); toast('No se pudo borrar'); }
+}
+
+// ---------- Resultados y chicas ----------
+async function setResultado(id, res) {
+  if (!canSave()) return;
+  const c = S.consultas.find(x => x.id === id); if (!c) return;
+  const nuevo = c.resultado === res ? null : res;
+  try {
+    await base().collection('consultas').doc(id).update({ resultado: nuevo });
+    const ch = chicaPorId(c.chicaId);
+    if (ch) {
+      const patch = { ultimaActividad: Date.now() };
+      if (nuevo === 'cita' && (ch.estado === 'hablando' || ch.estado === 'frio')) patch.estado = 'cita';
+      await base().collection('chicas').doc(ch.id).update(patch);
+    }
+    toast(nuevo ? 'Anotado' : 'Resultado borrado');
+  } catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function marcarUsada(id, i) {
+  if (!canSave()) return;
+  try { await base().collection('consultas').doc(id).update({ enviada: i }); toast('Marcada como usada'); }
+  catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+async function setEstado(k) {
+  const ch = chicaPorId(S.chicaAbierta); if (!ch || !canSave()) return;
+  try { await base().collection('chicas').doc(ch.id).update({ estado: k }); }
+  catch (e) { console.warn(e); toast('No se pudo guardar'); }
+}
+
+function onChangeDetalle(e) {
+  const id = e.target.id;
+  if (!['cd-nombre', 'cd-app', 'cd-notas'].includes(id)) return;
+  const ch = chicaPorId(S.chicaAbierta); if (!ch || !canSave()) return;
+  const ref = base().collection('chicas').doc(ch.id);
+  const fail = err => { console.warn(err); toast('No se pudo guardar'); };
+  if (id === 'cd-nombre') ref.update({ nombre: e.target.value.trim() || 'Sin nombre' }).catch(fail);
+  else if (id === 'cd-app') ref.update({ app: e.target.value }).catch(fail);
+  else ref.update({ notas: e.target.value.trim() }).then(() => toast('Notas guardadas')).catch(fail);
+}
+
+async function borrarChica(btn) {
+  const ch = chicaPorId(S.chicaAbierta); if (!ch || !canSave()) return;
+  const etiqueta = 'Borrar a ' + (ch.nombre || 'esta chica');
+  if (!S.borrarArmado) {
+    S.borrarArmado = true;
+    btn.textContent = 'Tocá de nuevo para borrar todo su historial';
+    clearTimeout(S.borrarT);
+    S.borrarT = setTimeout(() => { S.borrarArmado = false; const b = $('#cd-borrar'); if (b) b.textContent = etiqueta; }, 4000);
+    return;
+  }
+  clearTimeout(S.borrarT); S.borrarArmado = false;
+  btn.disabled = true; btn.textContent = 'Borrando…';
+  try {
+    for (const c of S.consultas.filter(x => x.chicaId === ch.id)) await base().collection('consultas').doc(c.id).delete();
+    await base().collection('chicas').doc(ch.id).delete();
+    if (S.nueva.chicaId === ch.id) S.nueva.chicaId = '';
+    if (S.citas.chicaId === ch.id) S.citas.chicaId = '';
+    S.chicaAbierta = null; $('#ch-detail').dataset.id = '';
+    renderAll(); toast('Borrada');
+  } catch (e) {
+    console.warn(e); btn.disabled = false; btn.textContent = etiqueta; toast('No se pudo borrar');
+  }
+}
+
+// ---------- Citas ----------
+const lugaresDe = p => (p && Array.isArray(p.lugares) ? p.lugares : [])
+  .map(l => ({ nombre: str(l && l.nombre), barrio: str(l && l.barrio), direccion: str(l && l.direccion), tipo: str(l && l.tipo), precio: str(l && l.precio), dato: str(l && l.dato), fuente: str(l && l.fuente) }))
+  .filter(l => l.nombre).slice(0, 3);
+
+async function pedirCitas() {
+  const st = S.citas; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderCitas(); return; }
+  const prompt = promptCitas({ chica: chicaPorId(st.chicaId), zona: $('#c-zona').value.trim(), presupuesto: PRESU[st.presupuesto], cuando: CUANDO[st.cuando] });
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderCitas();
+  try {
+    const raw = await S.sample.json(prompt, { cache: false, signal: st.ctl.signal, effort: 'medium' });
+    const planes = (raw && Array.isArray(raw.planes) ? raw.planes : []).map(p => ({ titulo: str(p && p.titulo), plan: str(p && p.plan), lugar: str(p && p.lugar), lugares: lugaresDe(p), porque: str(p && p.porque), mensaje: str(p && p.mensaje) })).filter(p => p.titulo || p.plan).slice(0, 4);
+    if (!planes.length) throw { code: 'invalid_json' };
+    st.result = planes; S.anim.citas = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderCitas(); }
+}
+
+// ---------- Registro ----------
+function irAPaso(n) {
+  S.ob.paso = Math.min(3, Math.max(1, n));
+  renderOb();
+  $('#onboarding').scrollTop = 0;
+}
+
+function obSeguir() {
+  if (S.ob.paso === 1) {
+    const nombre = $('#ob-nombre').value.trim();
+    if (!nombre) { toast('Decime cómo te llamás'); $('#ob-nombre').focus(); return; }
+    // Para que las instrucciones a Claude ya digan su nombre al leer las capturas.
+    S.perfil.nombre = nombre;
+  } else if (S.ob.paso === 2) {
+    if (S.ob.running) return;
+    if (S.ob.files.length) { toast('Tocá "Aprender de mis capturas" o sacalas para seguir'); return; }
+  }
+  irAPaso(S.ob.paso + 1);
+}
+
+async function leerCapturasRegistro() {
+  const st = S.ob;
+  if (st.running) return;
+  if (!st.files.length) { toast('Subí al menos una captura'); return; }
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderOb();
+  try {
+    const raw = await S.sample.json(PROMPT_ESTILO, { cache: false, signal: st.ctl.signal, modelTier: 'quick', images: st.files.map(f => f.file) });
+    const vistos = new Set(st.extraidos.map(x => x.texto.toLowerCase()));
+    const nuevos = (raw && Array.isArray(raw.mensajes) ? raw.mensajes : []).map(str).filter(t => t && !vistos.has(t.toLowerCase())).slice(0, 40);
+    const estilo = (raw && Array.isArray(raw.estilo) ? raw.estilo : []).map(str).filter(Boolean).slice(0, 5);
+    if (!nuevos.length && !estilo.length) st.error = 'No encontré mensajes tuyos en esas capturas. Probá con otras.';
+    st.extraidos = [...st.extraidos, ...nuevos.map(t => ({ texto: t, ok: true }))];
+    if (estilo.length) st.estilo = estilo;
+    st.files.forEach(f => URL.revokeObjectURL(f.url)); st.files = [];
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderThumbs('o'); renderOb(); }
+}
+
+function renderOb() {
+  const st = S.ob;
+  document.querySelectorAll('#onboarding .ob-paso').forEach(el => { el.hidden = Number(el.dataset.paso) !== st.paso; });
+  document.querySelectorAll('#onboarding .ob-progreso i').forEach((el, i) => el.classList.toggle('on', i < st.paso));
+  $('#ob-paso-t').textContent = `Paso ${st.paso} de 3`;
+  $('#o-go').disabled = st.running || !st.files.length;
+  $('#o-go').hidden = !st.files.length && !st.running;
+  const hay = st.extraidos.length || st.estilo.length || $('#ob-msgs').value.trim();
+  $('#ob-seguir-2').textContent = hay ? 'Seguir' : 'Saltear';
+  const out = $('#o-out');
+  if (st.running) { out.innerHTML = thinkingHTML('ob', st.since, 'Aprendiendo cómo escribís'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  if (st.estilo.length) h += `<div class="card"><span class="label">Así escribís</span><ul class="ob-estilo">${st.estilo.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+  if (st.extraidos.length) h += `<div class="field"><span class="label">Tus mensajes: dejá marcados los que suenan a vos</span><div class="chk">${st.extraidos.map((x, i) => `<label><input type="checkbox" data-obext="${i}"${x.ok ? ' checked' : ''}><span>${esc(x.texto)}</span></label>`).join('')}</div><p class="fine">Podés subir más capturas y se suman.</p></div>`;
+  out.innerHTML = h;
+}
+
+async function terminarOnboarding() {
+  const nombre = $('#ob-nombre').value.trim();
+  if (!nombre) { toast('Decime cómo te llamás'); irAPaso(1); $('#ob-nombre').focus(); return; }
+  const ficha = FICHA_CAMPOS.map(([pregunta], i) => {
+    const r = $('#ob-f' + i).value.trim();
+    return r ? `${pregunta}: ${r}` : '';
+  }).filter(Boolean).join('\n');
+  const vistos = new Set();
+  const ejemplos = [
+    ...S.ob.extraidos.filter(x => x.ok).map(x => ({ texto: x.texto, origen: 'captura' })),
+    ...$('#ob-msgs').value.split('\n').map(t => ({ texto: t.trim(), origen: 'registro' })),
+  ].filter(e => e.texto && !vistos.has(e.texto.toLowerCase()) && vistos.add(e.texto.toLowerCase()))
+    .slice(0, 60).map(e => ({ texto: e.texto.slice(0, 300), origen: e.origen, fecha: Date.now() }));
+  const b = $('#ob-go');
+  b.disabled = true; b.textContent = 'Guardando…';
+  try {
+    await base().set({ nombre, ficha, ejemplos, aprendizajes: S.ob.estilo.slice(), correcciones: [], favoritas: [], actualizado: Date.now() });
+    $('#onboarding').hidden = true;
+    suscribir();
+    renderAll();
+    toast('Listo, ya podés empezar');
+  } catch (e) {
+    console.warn(e); toast('No se pudo guardar. Probá de nuevo');
+    b.disabled = false; b.textContent = 'Empezar';
+  }
+}
+
+// ---------- Perfil ----------
+async function guardarFicha() {
+  if (!canSave()) return;
+  const ficha = $('#p-ficha').value.trim();
+  const nombre = $('#p-nombre').value.trim() || S.perfil.nombre;
+  try {
+    await guardarPerfil({ ficha, nombre });
+    S.fichaDirty = false; $('#p-ficha-st').textContent = 'Guardada'; toast('Ficha guardada');
+  } catch (e) { console.warn(e); $('#p-ficha-st').textContent = 'No se pudo guardar'; }
+}
+
+async function sacarConclusiones() {
+  const st = S.aprend; if (st.running || !S.sample || !canSave()) return;
+  const datos = S.consultas.filter(c => usada(c) && c.resultado).slice(0, 80)
+    .map(c => `${(TIPOS[c.tipo] || {}).label || 'Consulta'} | ${TONOS[c.variantes[c.enviada].tono] || ''} | "${msgDe(c)}" | ${RESULTADOS[c.resultado]}`);
+  const corr = S.perfil.correcciones.slice(0, 30)
+    .map(c => `"${c.propuesta}" → ${c.motivos.join(', ').toLowerCase() || 'no le gustó'}${c.suya ? `; él puso: "${c.suya}"` : ''}`);
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderPerfil();
+  try {
+    const favs = S.perfil.favoritas.slice(0, 30).map(f => `${TONOS[f.tono] || ''} | "${f.texto}"`);
+    const raw = await S.sample.json(promptAprendizajes(datos, corr, favs), { cache: false, signal: st.ctl.signal, effort: 'low' });
+    const ap = (raw && Array.isArray(raw.aprendizajes) ? raw.aprendizajes : []).map(str).filter(Boolean).slice(0, 6);
+    if (!ap.length) throw { code: 'invalid_json' };
+    await guardarPerfil({ aprendizajes: ap });
+    toast('Conclusiones actualizadas');
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderPerfil(); }
+}
+
+async function revisarPerfil() {
+  const st = S.rev; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderRev(); return; }
+  if (!st.files.length) { toast('Subí al menos una captura de tu perfil'); return; }
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderRev();
+  try {
+    const raw = await S.sample.json(promptRevision($('#r-app').value), { cache: false, signal: st.ctl.signal, effort: 'low', images: st.files.map(f => f.file) });
+    const r = raw && typeof raw === 'object' ? raw : {};
+    const lista = v => (Array.isArray(v) ? v : []).map(str).filter(Boolean).slice(0, 6);
+    const res = {
+      impresion: str(r.impresion), funciona: lista(r.funciona), cambiaria: lista(r.cambiaria), fotos: str(r.fotos),
+      propuestas: (Array.isArray(r.propuestas) ? r.propuestas : []).map(p => ({ donde: str(p && p.donde) || 'Texto', texto: str(p && p.texto) })).filter(p => p.texto).slice(0, 8),
+    };
+    if (!res.impresion && !res.cambiaria.length && !res.propuestas.length) throw { code: 'invalid_json' };
+    st.result = res; S.anim.rev = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderRev(); }
+}
+
+async function revisarFotos() {
+  const st = S.foto; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderFoto(); return; }
+  if (!st.files.length) { toast('Subí al menos una foto'); return; }
+  const fotos = st.files.slice();
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = ''; st.result = null;
+  renderFoto();
+  try {
+    const raw = await S.sample.json(promptFoto(st.destino, fotos.length), { cache: false, signal: st.ctl.signal, effort: 'low', images: fotos.map(f => f.file) });
+    const lista = v => (Array.isArray(v) ? v : []).map(str).filter(Boolean).slice(0, 4);
+    const items = (raw && Array.isArray(raw.fotos) ? raw.fotos : []).slice(0, fotos.length).map((f, i) => {
+      const vd = str(f && f.veredicto).toLowerCase();
+      const p = Math.round(Number(f && f.puntaje));
+      return {
+        url: fotos[i].url, veredicto: vd.includes('sub') ? 'si' : vd.includes('cambio') ? 'cambios' : 'no',
+        puntaje: p >= 1 && p <= 10 ? p : null, uso: str(f && f.uso),
+        funciona: lista(f && f.funciona), cambiaria: lista(f && f.cambiaria), captions: lista(f && f.captions).slice(0, 3),
+      };
+    });
+    if (!items.length) throw { code: 'invalid_json' };
+    st.result = { items, orden: str(raw.orden) }; S.anim.foto = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderFoto(); }
+}
+
+async function pedirHistorias() {
+  const st = S.hist; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderHist(); return; }
+  const fotos = st.files.slice();
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = ''; st.result = null;
+  renderHist();
+  try {
+    const opts = { cache: false, signal: st.ctl.signal, effort: 'low' };
+    if (fotos.length) opts.images = fotos.map(f => f.file);
+    const raw = await S.sample.json(promptHistorias(st.donde, $('#h-texto').value.trim(), fotos.length), opts);
+    const r = raw && typeof raw === 'object' ? raw : {};
+    const ideas = (Array.isArray(r.ideas) ? r.ideas : []).map(x => ({ titulo: str(x && x.titulo), que: str(x && x.que), texto: str(x && x.texto), extra: str(x && x.extra), porque: str(x && x.porque) })).filter(x => x.titulo || x.que).slice(0, 5);
+    const fs = (Array.isArray(r.fotos) ? r.fotos : []).slice(0, fotos.length).map((x, i) => ({ url: fotos[i].url, va: !!(x && x.va), comentario: str(x && x.comentario), texto: str(x && x.texto) }));
+    if (!ideas.length && !fs.length) throw { code: 'invalid_json' };
+    st.result = { ideas, fotos: fs }; S.anim.hist = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderHist(); }
+}
+
+async function pedirFrases() {
+  const st = S.wa; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderWa(); return; }
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderWa();
+  try {
+    const raw = await S.sample.json(promptFrase(), { cache: false, signal: st.ctl.signal, modelTier: 'quick' });
+    const frases = (raw && Array.isArray(raw.frases) ? raw.frases : []).map(str).filter(f => f && f.length <= 139).slice(0, 6);
+    if (!frases.length) throw { code: 'invalid_json' };
+    st.frases = frases; S.anim.wa = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderWa(); }
+}
+
+async function pedirBio() {
+  const st = S.bio; if (st.running) return;
+  if (!S.sample) { st.error = 'No hay conexión con Claude en esta vista.'; renderBio(); return; }
+  const app = $('#b-app').value, max = LIMITES_BIO[app].max;
+  st.ctl = new AbortController(); st.running = true; st.since = Date.now(); st.error = '';
+  renderBio();
+  try {
+    const raw = await S.sample.json(promptBio(app, st.tono, $('#b-texto').value.trim()), { cache: false, signal: st.ctl.signal, effort: 'low' });
+    const r = raw && typeof raw === 'object' ? raw : {};
+    const estados = (Array.isArray(r.estados) ? r.estados : []).map(x => ({ enfoque: str(x && x.enfoque), texto: str(x && x.texto), porque: str(x && x.porque) }))
+      .filter(x => x.texto && (!max || x.texto.length <= max)).slice(0, 5);
+    const prompts = (Array.isArray(r.prompts) ? r.prompts : []).map(p => ({ prompt: str(p && p.prompt), respuesta: str(p && p.respuesta) })).filter(p => p.prompt && p.respuesta).slice(0, 4);
+    if (!estados.length && !prompts.length) throw { code: 'invalid_json' };
+    st.result = { app, estados, prompts }; S.anim.bio = true;
+  } catch (e) { const m = errorCopy(e); if (m) st.error = m; }
+  finally { st.running = false; st.ctl = null; renderBio(); }
+}
+
+// ---------- Render ----------
+function renderAll() {
+  renderTabs(); renderTipo(); renderChicaSelects(); renderNuevaChica(); renderThumbs('n'); renderThumbs('r'); renderThumbs('e'); renderThumbs('f'); renderFoto(); renderThumbs('h'); renderHist(); renderWa(); renderBio();
+  renderNuevaOut(); renderPendientes(); renderChicas(); renderCitas(); renderPerfil(); renderRev();
+}
+
+function renderTabs() {
+  for (const k of ['nueva', 'chicas', 'citas', 'mejorar', 'perfil']) $('#v-' + k).hidden = S.tab !== k;
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-current', b.dataset.arg === S.tab ? 'page' : 'false'));
+}
+
+const chipsHTML = (map, sel, act) => Object.entries(map).map(([k, l]) => `<button class="chip" data-act="${act}" data-arg="${k}" aria-pressed="${sel === k}">${esc(l)}</button>`).join('');
+
+function renderTipo() { $('#n-tipo').innerHTML = chipsHTML(Object.fromEntries(Object.entries(TIPOS).map(([k, v]) => [k, v.label])), S.nueva.tipo, 'tipo'); }
+
+function renderChicaSelects() {
+  const opts = S.chicas.map(c => `<option value="${esc(c.id)}">${esc(c.nombre || 'Sin nombre')}${c.app ? ' · ' + esc(c.app) : ''}</option>`).join('');
+  const n = $('#n-chica'); n.innerHTML = '<option value="">Nueva chica</option>' + opts; n.value = S.nueva.chicaId;
+  const c = $('#c-chica'); c.innerHTML = '<option value="">Todavía no sé con quién</option>' + opts; c.value = S.citas.chicaId;
+}
+
+function renderNuevaChica() { $('#n-nueva-chica').hidden = !!S.nueva.chicaId; }
+
+function renderThumbs(k) {
+  const st = filesDe(k), box = $('#' + k + '-thumbs');
+  box.innerHTML = st.files.map((f, i) => `<div class="thumb"><img src="${f.url}" alt="Captura ${i + 1}"><button type="button" data-act="quitar" data-arg="${k}:${i}" aria-label="Sacar captura ${i + 1}">×</button></div>`).join('');
+  box.hidden = !st.files.length;
+}
+
+function thinkingHTML(key, since, label) {
+  return `<div class="card thinking"><div class="typing" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span></div><div class="th-txt"><strong>${esc(label)}</strong><span class="fine">Suele tardar unos segundos · <span data-since="${since}">0 s</span></span></div><button class="btn small ghost" data-act="stop" data-arg="${key}">Frenar</button></div>`;
+}
+
+function chatHTML(t) {
+  const lines = t.split('\n').map(s => s.trim()).filter(Boolean);
+  return `<div class="chat">${lines.map(l => {
+    const m = l.match(/^(ella|nico|yo|vos|él)\s*:\s*(.*)$/i);
+    if (!m) return `<p class="chat-note">${esc(l)}</p>`;
+    const mio = /^(nico|yo)$/i.test(m[1]);
+    return `<p class="bubble${mio ? '' : ' her'}">${esc(m[2])}</p>`;
+  }).join('')}</div>`;
+}
+
+function varianteHTML(v, i, rec, n) {
+  const u = n.enviada === i, propia = v.tono === 'propia', esRec = i === rec && !propia;
+  const rech = n.rechazadas.includes(i) && !u;
+  const liked = n.likes.includes(i);
+  const likeBtn = propia || rech ? '' : `<button class="icon-btn${n.pop === i ? ' pop' : ''}" data-act="like" data-arg="${i}" aria-pressed="${liked}" aria-label="Me gusta" title="Me gusta">${ICON_LIKE}</button>`;
+  const noMeGusta = propia || rech || liked ? '' : `<button class="icon-btn" data-act="fb-open" data-arg="${i}" aria-label="No me gusta" title="No me gusta">${ICON_DISLIKE}</button>`;
+  return `<article class="var folder pastel t-${v.tono}${esRec ? ' rec' : ''}${u ? ' usada' : ''}${rech ? ' rechazada' : ''}">
+    <header><span class="tono">${esc(TONOS[v.tono])}</span>${esRec ? '<span class="badge">La que mandaría</span>' : ''}</header>
+    <div class="bubbles" id="var-${i}">${v.mensajes.map(m => `<p class="bubble">${esc(m)}</p>`).join('')}</div>
+    <div class="var-actions">${likeBtn}${noMeGusta}<button class="btn small${u ? ' on' : ''}" data-act="usar" data-arg="${i}">${u ? 'Copiar de nuevo' : 'Copiar y usar'}</button></div>
+  </article>${n.fb && n.fb.open === i ? fbHTML() : ''}`;
+}
+
+function fbHTML() {
+  const fb = S.nueva.fb;
+  return `<div class="card fb">
+    <span class="label">${fb.open === 'all' ? '¿Qué no te cerró de estas?' : '¿Qué no te cerró?'}</span>
+    <div class="chips">${MOTIVOS.map(m => `<button class="chip" data-act="fb-motivo" data-arg="${esc(m)}" aria-pressed="${fb.motivos.includes(m)}">${esc(m)}</button>`).join('')}</div>
+    <label class="label" for="fb-texto">Cómo lo dirías vos</label>
+    <textarea id="fb-texto" rows="2" placeholder="Opcional, pero es lo que más le enseña"></textarea>
+    <div class="row-end"><button class="btn small ghost" data-act="fb-cancel">Cancelar</button><button class="btn small" data-act="fb-save">Guardar</button><button class="btn small primary" data-act="fb-usar">Usar la mía</button></div>
+  </div>`;
+}
+
+function renderNuevaOut() {
+  const n = S.nueva, out = $('#n-out');
+  $('#n-go').disabled = n.running;
+  if (n.running) { out.innerHTML = thinkingHTML('nueva', n.since, n.result ? 'Ajustando las opciones' : 'Leyendo el chat y armando opciones'); return; }
+  let h = n.error ? `<p class="error" role="alert">${esc(n.error)}</p>` : '';
+  const r = n.result;
+  if (r) {
+    h += '<div class="result' + anim('nueva') + '">';
+    if (r.lectura) h += `<div class="card lectura"><span class="label">Lo que leo</span><p>${esc(r.lectura)}</p></div>`;
+    if (r.transcripcion) h += `<details class="card trans"><summary>Lo que leí de la captura</summary>${chatHTML(r.transcripcion)}</details>`;
+    h += r.variantes.map((v, i) => varianteHTML(v, i, r.recomendada, n)).join('');
+    if (!n.fb) h += '<button class="linkish" data-act="fb-open" data-arg="all">Ninguna me convence, escribo la mía</button>';
+    else if (n.fb.open === 'all') h += fbHTML();
+    if (r.porque) h += `<p class="porque">${esc(r.porque)}</p>`;
+    h += `<div class="field"><span class="label">Ajustar</span><div class="chips">${Object.entries(AJUSTES).map(([k, a]) => `<button class="chip" data-act="ajuste" data-arg="${k}">${esc(a.label)}</button>`).join('')}</div></div>`;
+    if (n.saveError) h += `<p class="fine">${esc(n.saveError)}</p>`;
+    else if (Number.isInteger(n.enviada) && canSave()) h += '<p class="fine">Cuando te conteste, marcá qué pasó acá abajo o en el Fichero. Así la app aprende qué te funciona.</p>';
+    h += '<button class="btn ghost" data-act="nueva-reset">Empezar otra consulta</button></div>';
+  }
+  out.innerHTML = h;
+  const ta = $('#fb-texto');
+  if (ta && n.fb) ta.value = n.fb.texto;
+}
+
+function resBtns(c) {
+  return `<div class="res-btns">${Object.entries(RESULTADOS).map(([k, l]) => `<button class="chip" data-act="res" data-id="${esc(c.id)}" data-arg="${k}" aria-pressed="${c.resultado === k}">${esc(l)}</button>`).join('')}</div>`;
+}
+
+function renderPendientes() {
+  const box = $('#n-pend');
+  const todos = S.consultas.filter(c => usada(c) && !c.resultado);
+  if (!todos.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  box.innerHTML = '<span class="label">¿Qué pasó con estos?</span>' + todos.slice(0, 3).map(c => {
+    const ch = chicaPorId(c.chicaId);
+    return `<div class="pend-item"><div class="pend-meta"><strong>${esc(ch ? ch.nombre : 'Sin nombre')}</strong><span>${esc(hace(c.creado))}</span></div><p class="pend-msg">${esc(msgDe(c))}</p>${resBtns(c)}</div>`;
+  }).join('') + (todos.length > 3 ? `<button class="linkish" data-act="tab" data-arg="chicas">Ver los ${todos.length} en el Fichero</button>` : '');
+}
+
+function renderChicas() {
+  if (S.chicaAbierta && chicaPorId(S.chicaAbierta)) { renderDetalle(); return; }
+  S.chicaAbierta = null;
+  $('#ch-detail').hidden = true; $('#ch-list-wrap').hidden = false;
+  renderKpis(); renderTipoChamuyo();
+  const list = $('#ch-list');
+  const cuenta = Object.entries(ESTADOS).map(([k, l]) => [l, S.chicas.filter(c => (c.estado || 'hablando') === k).length]).filter(([, n]) => n);
+  $('#ch-resumen').textContent = cuenta.length ? cuenta.map(([l, n]) => `${l}: ${n}`).join(' · ') : 'Cada chat con su historial y lo que le mandaste.';
+  if (S.ready && !canSave()) { list.innerHTML = '<div class="empty"><p><strong>Sin historial en esta vista.</strong></p><p class="fine">Entrá con tu cuenta de Claude para guardar las chicas y sus chats.</p></div>'; return; }
+  if (!S.chicas.length) {
+    list.innerHTML = '<div class="empty"><p><strong>Todavía no hay nadie.</strong></p><p class="fine">Cuando armes tu primera respuesta, la chica aparece acá con su historial, sus notas y lo que le mandaste.</p><button class="btn small" data-act="tab" data-arg="nueva">Armar una respuesta</button></div>';
+    return;
+  }
+  const cuentaEst = {};
+  S.chicas.forEach(c => { const e = ESTADOS[c.estado] ? c.estado : 'hablando'; cuentaEst[e] = (cuentaEst[e] || 0) + 1; });
+  if (S.ffFiltro !== 'todas' && !cuentaEst[S.ffFiltro]) S.ffFiltro = 'todas';
+  const filtros = [['todas', 'Todas', S.chicas.length], ...Object.keys(ESTADOS).filter(k => cuentaEst[k]).map(k => [k, ESTADOS[k], cuentaEst[k]])];
+  const tools = `<div class="ff-tools">
+    <div class="seg" role="group" aria-label="Ordenar">${Object.entries(ORDENES).map(([k, l]) => `<button class="seg-b" data-act="ff-orden" data-arg="${k}" aria-pressed="${S.ffOrden === k}">${l}</button>`).join('')}</div>
+    <div class="chips ff-filtros" role="group" aria-label="Filtrar por estado">${filtros.map(([k, l, n]) => `<button class="chip" data-act="ff-filtro" data-arg="${k}" aria-pressed="${S.ffFiltro === k}">${esc(l)}<span class="n">${n}</span></button>`).join('')}</div>
+  </div>`;
+  const xs = chicasOrdenadas();
+  if (!xs.length) { list.innerHTML = tools + '<div class="empty"><p>No hay conversaciones con ese filtro.</p></div>'; return; }
+  list.innerHTML = tools + `<div class="drawer"><div class="ff-stack">${xs.map((c, i) => {
+    const ult = S.consultas.find(x => x.chicaId === c.id && usada(x));
+    const sub = ult ? 'Vos: ' + msgDe(ult) : (c.app ? 'Desde ' + c.app : 'Sin mensajes todavía');
+    const est = ESTADOS[c.estado] ? c.estado : 'hablando';
+    const color = est === 'cerrado' ? 'gris' : FF_COLORES[i % FF_COLORES.length];
+    const nombre = c.nombre || 'Sin nombre', abierta = S.ffAbierta === c.id, pend = ult && !ult.resultado;
+    return `<article class="ff c-${color}${abierta ? ' open' : ''}" data-id="${esc(c.id)}" style="--i:${i}">
+      <button class="ff-hit" data-act="ff" data-id="${esc(c.id)}" aria-expanded="${abierta}" aria-label="Abrir la tarjeta de ${esc(nombre)}"></button>
+      <div class="ff-strip"><span class="ic" aria-hidden="true">${esc(inicial(nombre))}</span><span class="ff-k">${pend ? '<span class="ff-dot" title="Falta marcar qué pasó"></span>' : ''}${ESTADOS[est]}${c.app ? ' · ' + esc(c.app) : ''}</span><span class="ff-name">${esc(nombre)}</span><span class="ff-when">${esc(haceCorto(c.ultimaActividad))}</span></div>
+      <div class="ff-body">
+        <p class="ff-last">${esc(sub)}</p>
+        ${c.resumen ? `<p class="ff-res">${esc(c.resumen)}</p>` : ''}
+        <button class="btn small" data-act="abrir" data-id="${esc(c.id)}">Abrir ficha</button>
+      </div>
+    </article>`;
+  }).join('')}</div></div>`;
+}
+
+function chicasOrdenadas() {
+  let xs = S.chicas.slice();
+  if (S.ffFiltro !== 'todas') xs = xs.filter(c => (ESTADOS[c.estado] ? c.estado : 'hablando') === S.ffFiltro);
+  if (S.ffOrden === 'az') xs.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' }));
+  else if (S.ffOrden === 'viejas') xs.sort((a, b) => (a.ultimaActividad || 0) - (b.ultimaActividad || 0));
+  else xs.sort((a, b) => (b.ultimaActividad || 0) - (a.ultimaActividad || 0));
+  return xs;
+}
+
+function setFichero(clave, valor) {
+  if (clave === 'orden') S.ffOrden = valor; else S.ffFiltro = valor;
+  try { localStorage.setItem('chamuyia.ff.' + clave, valor); } catch (e) { /* sin almacenamiento */ }
+  renderChicas(); animarFichero();
+}
+
+function toggleCarpeta(id) {
+  S.ffAbierta = S.ffAbierta === id ? null : id;
+  document.querySelectorAll('.ff').forEach(el => {
+    const on = el.dataset.id === S.ffAbierta;
+    el.classList.toggle('open', on);
+    const t = el.querySelector('.ff-hit');
+    if (t) t.setAttribute('aria-expanded', String(on));
+  });
+}
+
+function animarFichero() {
+  const d = $('.drawer');
+  if (!d || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  d.classList.remove('entrando'); void d.offsetWidth; d.classList.add('entrando');
+  clearTimeout(S.ffT);
+  S.ffT = setTimeout(() => d.classList.remove('entrando'), 450 + S.chicas.length * 40);
+}
+
+function contarKpis() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('#ch-kpis b[data-n]').forEach(b => {
+    const fin = Number(b.dataset.n), suf = b.dataset.suf || '', t0 = performance.now();
+    const paso = t => {
+      const p = Math.min(1, (t - t0) / 500);
+      b.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3))) + suf;
+      if (p < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+  });
+}
+
+function corazones(rect) {
+  if (!rect || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const b = document.createElement('div');
+  b.className = 'burst';
+  b.style.left = (rect.left + rect.width / 2) + 'px';
+  b.style.top = (rect.top + rect.height / 2) + 'px';
+  for (let k = 0; k < 7; k++) {
+    const ang = (-90 + (k - 3) * 28) * Math.PI / 180, dist = 34 + (k % 3) * 10;
+    const h = document.createElement('i');
+    h.textContent = '♥';
+    h.style.setProperty('--dx', Math.round(Math.cos(ang) * dist) + 'px');
+    h.style.setProperty('--dy', Math.round(Math.sin(ang) * dist) + 'px');
+    h.style.setProperty('--rot', ((k - 3) * 12) + 'deg');
+    h.style.animationDelay = (k * 25) + 'ms';
+    b.append(h);
+  }
+  document.body.append(b);
+  setTimeout(() => b.remove(), 1100);
+}
+
+function renderKpis() {
+  const usadas = S.consultas.filter(usada);
+  const conRes = usadas.filter(c => c.resultado);
+  const ok = conRes.filter(c => c.resultado !== 'nada').length;
+  const citas = S.chicas.filter(c => c.estado === 'cita' || c.estado === 'salimos').length;
+  const items = [
+    ['noche', ICO.chicas, S.chicas.length, S.chicas.length === 1 ? 'Chica' : 'Chicas'],
+    ['blanco', ICO.usados, usadas.length, 'Mensajes usados'],
+    ['coral', ICO.resp, conRes.length ? Math.round(ok / conRes.length * 100) + '%' : '–', 'Te respondieron'],
+    ['blanco', ICO.cita, citas, citas === 1 ? 'Cita' : 'Citas'],
+  ];
+  $('#ch-kpis').innerHTML = items.map(([c, ic, n, l]) => {
+    const m = String(n).match(/^(\d+)(%?)$/);
+    return `<div class="kpi folder c-${c}"><span class="ic">${svgIcon(ic)}</span><b${m ? ` data-n="${m[1]}" data-suf="${m[2]}"` : ''}>${n}</b><span>${l}</span></div>`;
+  }).join('');
+}
+
+function perfilChamuyo() {
+  const cuenta = { picante: 0, absurdo: 0, cita: 0, profundo: 0 };
+  S.perfil.favoritas.forEach(f => { if (f.tono in cuenta) cuenta[f.tono] += 1; });
+  S.consultas.filter(usada).forEach(c => { const t = c.variantes[c.enviada].tono; if (t in cuenta) cuenta[t] += 1; });
+  const total = Object.values(cuenta).reduce((a, b) => a + b, 0);
+  const orden = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
+  return { cuenta, total, orden };
+}
+
+function renderTipoChamuyo() {
+  const { cuenta, total, orden } = perfilChamuyo();
+  const [a, b] = orden;
+  let nombre = 'Todavía no sé';
+  let desc = 'Dale ♥ a las opciones que te gustan en Chamuyar o usá alguna. Con 3 ya te digo qué tipo sos.';
+  if (total >= 3) {
+    nombre = TIPOS_CHAMUYO[a].nombre;
+    desc = TIPOS_CHAMUYO[a].desc;
+    if (cuenta[b] && cuenta[b] >= cuenta[a] * 0.75) nombre += ' con toque ' + TIPOS_CHAMUYO[b].nombre.toLowerCase();
+  }
+  const rows = orden.map(t => {
+    const pct = total ? Math.round(cuenta[t] / total * 100) : 0;
+    return `<div class="trow t-${t}"><span class="ic">${svgIcon(ICO[t])}</span><span class="trow-txt"><b>${TIPOS_CHAMUYO[t].nombre}</b><span>${cuenta[t] === 1 ? '1 elegida' : cuenta[t] + ' elegidas'}</span></span><strong>${pct}%</strong></div>`;
+  }).join('');
+  const hay = total >= 3, pctA = total ? Math.round(cuenta[a] / total * 100) : 0;
+  $('#ch-tipo').innerHTML = `<div class="stack"><div class="folder back b2 c-tinto"></div><div class="folder back b1 c-arena"></div><div class="folder front pastel tipo c-coral">
+    <span class="label">Tu tipo de chamuyo</span>
+    <p class="tipo-name">${esc(nombre)}</p>
+    <div class="torta">${tortaSVG(cuenta, total, orden, hay)}<div class="torta-foot"><span class="torta-k">${hay ? esc(TIPOS_CHAMUYO[a].nombre) : 'Sin datos todavía'}</span><b class="torta-n">${hay ? pctA + '<small>%</small>' : '–'}</b></div></div>
+    <p class="tipo-desc">${esc(desc)}</p>
+    <div class="tipo-rows">${rows}</div>
+  </div></div>`;
+}
+
+function tortaSVG(cuenta, total, orden, hay) {
+  const C = 2 * Math.PI * 46;
+  if (!hay) {
+    return `<svg viewBox="0 0 220 220" role="img" aria-label="Todavía no hay datos para la torta"><circle cx="110" cy="110" r="108" fill="#1D1818"/><circle cx="110" cy="110" r="70" fill="none" stroke="#E58C86" stroke-width="3" stroke-dasharray="6 9" opacity=".8"/><text x="110" y="128" text-anchor="middle" fill="#ECECEC" font-family="Archivo, Helvetica, sans-serif" font-weight="700" font-size="52">?</text></svg>`;
+  }
+  let acc = 0;
+  const partes = orden.filter(t => cuenta[t]).map((t, k) => {
+    const len = cuenta[t] / total * C;
+    const seg = `<circle class="slice" cx="110" cy="110" r="46" stroke-width="92" style="stroke:var(--t-${t});--C:${C.toFixed(2)};--k:${k};stroke-dasharray:${Math.max(len - 2, 0.5).toFixed(2)} ${C.toFixed(2)};stroke-dashoffset:${(-acc).toFixed(2)}"/>`;
+    acc += len;
+    return seg;
+  }).join('');
+  const label = orden.filter(t => cuenta[t]).map(t => `${TIPOS_CHAMUYO[t].nombre} ${Math.round(cuenta[t] / total * 100)}%`).join(', ');
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="Torta de tu tipo de chamuyo: ${esc(label)}">
+    <circle cx="110" cy="110" r="108" fill="#1D1818"/>
+    <g transform="rotate(-90 110 110)">${partes}</g>
+    <circle cx="110" cy="110" r="36" fill="#1D1818"/>
+    <g fill="none" stroke="var(--t-${orden[0]})" style="stroke:var(--t-${orden[0]})" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" transform="translate(92 92) scale(1.5)">${ICO[orden[0]]}</g>
+  </svg>`;
+}
+
+function animarTorta() {
+  const t = $('.torta');
+  if (!t) return;
+  t.classList.remove('anima'); void t.offsetWidth; t.classList.add('anima');
+}
+
+function renderDetalle() {
+  const c = chicaPorId(S.chicaAbierta), d = $('#ch-detail');
+  $('#ch-list-wrap').hidden = true; d.hidden = false;
+  if (d.dataset.id !== c.id) {
+    d.dataset.id = c.id; S.borrarArmado = false;
+    d.innerHTML = `
+      <button class="back" data-act="cerrar">← Todas</button>
+      <div class="d-head folder pastel" id="cd-head"><span class="avatar big" id="cd-av" aria-hidden="true"></span><div class="d-id"><input type="text" id="cd-nombre" aria-label="Nombre" autocomplete="off"><select id="cd-app" aria-label="App">${APPS.map(a => `<option>${a}</option>`).join('')}</select></div></div>
+      <div class="field"><span class="label">Estado</span><div class="chips" id="cd-estado"></div></div>
+      <div class="btn-row"><button class="btn primary" data-act="consultar-con" data-id="${esc(c.id)}">Nueva consulta</button><button class="btn" data-act="citas-con" data-id="${esc(c.id)}">Ideas de citas</button></div>
+      <div class="field"><span class="label">Lo que sabemos de ella</span><p class="card resumen" id="cd-resumen"></p></div>
+      <div class="field"><label class="label" for="cd-notas">Tus notas</label><textarea id="cd-notas" rows="3" placeholder="De dónde es, qué le gusta, en qué quedaron"></textarea></div>
+      <div class="field"><span class="label">Historial</span><div class="timeline" id="cd-timeline"></div></div>
+      <button class="btn danger" id="cd-borrar" data-act="borrar"></button>`;
+    $('#cd-notas').value = c.notas || '';
+  }
+  const act = document.activeElement;
+  if (act !== $('#cd-nombre')) $('#cd-nombre').value = c.nombre || '';
+  if (act !== $('#cd-app')) $('#cd-app').value = APPS.includes(c.app) ? c.app : 'Otra';
+  if (act !== $('#cd-notas') && $('#cd-notas').value !== (c.notas || '')) $('#cd-notas').value = c.notas || '';
+  $('#cd-av').textContent = inicial(c.nombre);
+  $('#cd-head').className = 'd-head folder pastel c-' + COLOR_ESTADO[ESTADOS[c.estado] ? c.estado : 'hablando'];
+  $('#cd-estado').innerHTML = chipsHTML(ESTADOS, ESTADOS[c.estado] ? c.estado : 'hablando', 'estado');
+  $('#cd-resumen').textContent = c.resumen || 'Todavía nada. Se va completando con cada consulta.';
+  if (!S.borrarArmado) $('#cd-borrar').textContent = 'Borrar a ' + (c.nombre || 'esta chica');
+  const cs = S.consultas.filter(x => x.chicaId === c.id);
+  $('#cd-timeline').innerHTML = cs.length ? cs.map(x => {
+    let h = `<div class="tl"><div class="tl-meta"><span>${esc((TIPOS[x.tipo] || {}).label || 'Consulta')}</span><span>${esc(fechaCorta(x.creado))}</span></div>`;
+    if (usada(x)) h += `<div class="bubbles">${x.variantes[x.enviada].mensajes.map(m => `<p class="bubble">${esc(m)}</p>`).join('')}</div>${resBtns(x)}`;
+    else h += `<details><summary>No marcaste ninguna como usada</summary><div class="tl-opts">${(x.variantes || []).map((v, i) => `<div class="tl-opt"><p>${esc((v.mensajes || []).join(' / '))}</p><button class="btn small" data-act="usada-tarde" data-id="${esc(x.id)}" data-arg="${i}">Usé esta</button></div>`).join('')}</div></details>`;
+    return h + '</div>';
+  }).join('') : '<p class="fine">Sin consultas todavía.</p>';
+}
+
+// Link a Google Maps con la búsqueda del lugar, para ver dirección, horarios y reseñas.
+const mapsDe = l => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent([l.nombre, l.direccion || l.barrio, 'Buenos Aires'].filter(Boolean).join(', '));
+const linkSeguro = u => (/^https:\/\/[^\s"'<>]+$/i.test(u) ? u : '');
+function lugarHTML(l) {
+  const meta = [l.barrio, l.tipo, l.precio].filter(Boolean).join(' · ');
+  const fuente = linkSeguro(l.fuente);
+  return `<div class="lugar">
+    <p class="lugar-n">${esc(l.nombre)}</p>
+    ${meta ? `<p class="lugar-m">${esc(meta)}</p>` : ''}${l.direccion ? `<p class="lugar-m">${esc(l.direccion)}</p>` : ''}
+    ${l.dato ? `<p class="lugar-d">${esc(l.dato)}</p>` : ''}
+    <div class="lugar-links"><a class="btn small" href="${esc(mapsDe(l))}" target="_blank" rel="noopener">Ver en Google Maps</a>${fuente ? `<a class="lugar-f" href="${esc(fuente)}" target="_blank" rel="noopener">Fuente</a>` : ''}</div>
+  </div>`;
+}
+
+function renderCitas() {
+  const st = S.citas;
+  $('#c-presu').innerHTML = chipsHTML(PRESU, st.presupuesto, 'presu');
+  $('#c-cuando').innerHTML = chipsHTML(CUANDO, st.cuando, 'cuando');
+  $('#c-go').disabled = st.running;
+  const out = $('#c-out');
+  if (st.running) { out.innerHTML = thinkingHTML('citas', st.since, 'Buscando lugares'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  if (st.result) h += `<div class="planes${anim('citas')}">${st.result.map((p, i) => `<article class="folder pastel plan c-${PASTELES[i % 4]}">
+      <h3 class="plan-t">${esc(p.titulo || 'Plan ' + (i + 1))}</h3>
+      ${p.plan ? `<p>${esc(p.plan)}</p>` : ''}
+      ${p.lugares && p.lugares.length ? `<div class="lugares">${p.lugares.map(lugarHTML).join('')}</div>` : ''}
+      <dl class="plan-dl">${p.lugar && !(p.lugares && p.lugares.length) ? `<div><dt>Dónde</dt><dd>${esc(p.lugar)}</dd></div>` : ''}${p.porque ? `<div><dt>Por qué</dt><dd>${esc(p.porque)}</dd></div>` : ''}</dl>
+      ${p.mensaje ? `<span class="label">Para invitarla</span><div class="bubbles" id="plan-${i}"><p class="bubble">${esc(p.mensaje)}</p></div><div class="var-actions"><button class="btn small" data-act="copiar" data-arg="plan-${i}">Copiar</button></div>` : ''}
+    </article>`).join('')}</div>`;
+  out.innerHTML = h;
+}
+
+function statsHTML() {
+  const usadas = S.consultas.filter(usada);
+  if (!usadas.length) return '<p class="fine">Todavía no hay datos. Cada vez que uses una opción y marques si te respondió, acá vas a ver qué tono te funciona más.</p>';
+  const conRes = usadas.filter(c => c.resultado);
+  const ok = conRes.filter(c => c.resultado !== 'nada');
+  const pct = conRes.length ? Math.round(ok.length / conRes.length * 100) + '%' : '–';
+  let h = `<div class="stats"><div class="stat"><b>${usadas.length}</b><span>mensajes usados</span></div><div class="stat"><b>${pct}</b><span>te respondieron</span></div><div class="stat"><b>${conRes.filter(c => c.resultado === 'cita').length}</b><span>terminaron en cita</span></div></div>`;
+  const filas = Object.keys(TONOS).map(t => {
+    const u = conRes.filter(c => c.variantes[c.enviada].tono === t);
+    return { t, n: u.length, o: u.filter(c => c.resultado !== 'nada').length };
+  }).filter(f => f.n);
+  if (filas.length) h += `<div class="bars">${filas.map(f => `<div class="bar t-${f.t}"><span class="tono">${esc(TONOS[f.t])}</span><span class="track"><i style="width:${Math.round(f.o / f.n * 100)}%"></i></span><span class="bar-n">${f.o}/${f.n}</span></div>`).join('')}</div>`;
+  return h;
+}
+
+function renderPerfil() {
+  const ta = $('#p-ficha');
+  if (S.perfilLoaded && document.activeElement !== ta && !S.fichaDirty) ta.value = S.perfil.ficha;
+  const pn = $('#p-nombre');
+  if (S.perfilLoaded && document.activeElement !== pn && !S.fichaDirty) pn.value = S.perfil.nombre || '';
+  pn.disabled = !canSave();
+  ta.disabled = !canSave(); $('#p-ficha-save').disabled = !canSave();
+  ta.placeholder = S.ready && !canSave() ? 'Entrá con tu cuenta de Claude para guardar tu ficha.' : 'Cargando tu ficha…';
+  $('#p-stats').innerHTML = statsHTML();
+  const ap = S.perfil.aprendizajes, ul = $('#p-aprend');
+  ul.hidden = !ap.length; ul.innerHTML = ap.map(a => `<li>${esc(a)}</li>`).join('');
+  const st = S.aprend;
+  const datosN = S.consultas.filter(c => usada(c) && c.resultado).length + S.perfil.correcciones.length + S.perfil.favoritas.length;
+  const btn = $('#p-aprend-go');
+  btn.disabled = st.running || datosN < 3 || !S.sample || !canSave();
+  btn.textContent = ap.length ? 'Actualizar conclusiones' : 'Sacar conclusiones';
+  $('#p-aprend-hint').textContent = datosN < 3 ? `Necesito al menos 3 datos: resultados marcados, opciones que te gustaron o que corregiste (llevás ${datosN}).` : '';
+  $('#p-aprend-out').innerHTML = st.running ? thinkingHTML('aprend', st.since, 'Mirando tus resultados') : (st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '');
+  renderEj();
+}
+
+function renderEj() {
+  const ej = S.perfil.ejemplos, co = S.perfil.correcciones, st = S.ej, fav = S.perfil.favoritas;
+  $('#e-fav').innerHTML = fav.length
+    ? `<details><summary class="fine">Opciones que te gustaron (${fav.length})</summary><div class="corr">${fav.map((f, i) => `<div class="corr-item"><p>${esc(f.texto)}</p><button class="x" data-act="fav-del" data-arg="${i}" aria-label="Sacar de las que te gustaron">×</button></div>`).join('')}</div></details>`
+    : '';
+  $('#e-lista').innerHTML = ej.length
+    ? `<details class="card"${ej.length <= 8 ? ' open' : ''}><summary>${ej.length === 1 ? '1 mensaje tuyo guardado' : ej.length + ' mensajes tuyos guardados'}</summary><div class="ejemplos">${ej.map((e, i) => `<div class="ej"><p class="bubble">${esc(e.texto)}</p><button class="x" data-act="ej-del" data-arg="${i}" aria-label="Borrar este mensaje">×</button></div>`).join('')}</div></details>`
+    : '<p class="fine">Todavía no guardaste ninguno.</p>';
+  $('#e-texto').disabled = !canSave(); $('#e-add').disabled = !canSave();
+  $('#e-go').disabled = st.running || !canSave();
+  const out = $('#e-out');
+  if (st.running) out.innerHTML = thinkingHTML('ej', st.since, 'Buscando tus mensajes');
+  else {
+    let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+    if (st.extraidos) h += `<div class="field"><span class="label">Marcá los que suenan a vos</span><div class="chk">${st.extraidos.map((x, i) => `<label><input type="checkbox" data-ext="${i}"${x.ok ? ' checked' : ''}><span>${esc(x.texto)}</span></label>`).join('')}</div><div class="row-end"><button class="btn small primary" data-act="ej-guardar">Guardar los marcados</button></div></div>`;
+    out.innerHTML = h;
+  }
+  $('#e-corr').innerHTML = co.length
+    ? `<details><summary class="fine">Opciones que corregiste (${co.length})</summary><div class="corr">${co.map((c, i) => `<div class="corr-item"><p><s>${esc(c.propuesta)}</s>${c.motivos.length ? ' · ' + esc(c.motivos.join(', ')) : ''}${c.suya ? '<br>Vos: ' + esc(c.suya) : ''}</p><button class="x" data-act="corr-del" data-arg="${i}" aria-label="Borrar esta corrección">×</button></div>`).join('')}</div></details>`
+    : '';
+}
+
+function renderRev() {
+  const st = S.rev, out = $('#r-out');
+  $('#r-go').disabled = st.running;
+  if (st.running) { out.innerHTML = thinkingHTML('rev', st.since, 'Mirando tu perfil'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  const r = st.result;
+  if (r) {
+    const ul = xs => `<ul>${xs.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    h += '<div class="rev' + anim('rev') + '">';
+    if (r.impresion) h += `<p class="rev-imp">${esc(r.impresion)}</p>`;
+    if (r.funciona.length) h += `<div><span class="label">Lo que funciona</span>${ul(r.funciona)}</div>`;
+    if (r.cambiaria.length) h += `<div><span class="label">Lo que cambiaría</span>${ul(r.cambiaria)}</div>`;
+    if (r.propuestas.length) h += `<div class="props"><span class="label">Textos para copiar</span>${r.propuestas.map((p, i) => `<div class="prop"><span class="prop-d">${esc(p.donde)}</span><p id="prop-${i}">${esc(p.texto)}</p><button class="btn small" data-act="copiar" data-arg="prop-${i}">Copiar</button></div>`).join('')}</div>`;
+    if (r.fotos) h += `<div><span class="label">Fotos</span><p>${esc(r.fotos)}</p></div>`;
+    h += '</div>';
+  }
+  out.innerHTML = h;
+}
+
+function renderFoto() {
+  const st = S.foto, out = $('#f-out');
+  $('#f-destino').innerHTML = chipsHTML(DESTINOS, st.destino, 'destino');
+  $('#f-go').disabled = st.running;
+  if (st.running) { out.innerHTML = thinkingHTML('foto', st.since, st.files.length > 1 ? 'Mirando tus fotos' : 'Mirando tu foto'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  const r = st.result;
+  if (r) {
+    const ul = xs => `<ul>${xs.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    h += '<div class="fotos' + anim('foto') + '">';
+    if (r.orden) h += `<p class="rev-imp">${esc(r.orden)}</p>`;
+    h += r.items.map((f, i) => `<article class="card foto"><img src="${f.url}" alt="Foto ${i + 1}"><div class="foto-main">
+      <div class="foto-top"><span class="vd vd-${f.veredicto}">${VEREDICTOS[f.veredicto]}</span>${f.puntaje ? `<span class="puntaje">${f.puntaje}<small>/10</small></span>` : ''}</div>
+      ${f.uso ? `<p class="fine">${esc(f.uso)}</p>` : ''}
+      ${f.funciona.length ? `<div><span class="label">Lo que funciona</span>${ul(f.funciona)}</div>` : ''}
+      ${f.cambiaria.length ? `<div><span class="label">Lo que cambiaría</span>${ul(f.cambiaria)}</div>` : ''}
+      ${f.captions.length ? `<div class="caps"><span class="label">Para el caption</span>${f.captions.map((c, j) => `<div class="cap"><p id="cap-${i}-${j}">${esc(c)}</p><button class="btn small" data-act="copiar" data-arg="cap-${i}-${j}">Copiar</button></div>`).join('')}</div>` : ''}
+    </div></article>`).join('');
+    h += '</div>';
+  }
+  out.innerHTML = h;
+}
+
+function capHTML(id, texto, conLargo) {
+  return `<div class="cap"><p id="${id}">${esc(texto)}</p>${conLargo ? `<span class="fine">${texto.length}</span>` : ''}<button class="btn small" data-act="copiar" data-arg="${id}">Copiar</button></div>`;
+}
+
+function renderHist() {
+  const st = S.hist, out = $('#h-out');
+  $('#h-donde').innerHTML = chipsHTML(DONDE, st.donde, 'donde');
+  $('#h-go').disabled = st.running;
+  if (st.running) { out.innerHTML = thinkingHTML('hist', st.since, 'Pensando qué podés subir'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  const r = st.result;
+  if (r) {
+    h += '<div class="ideas' + anim('hist') + '">';
+    h += r.fotos.map((f, i) => `<article class="card hfoto"><img src="${f.url}" alt="Foto ${i + 1}"><div class="hfoto-main">
+      <div class="foto-top"><span class="vd vd-${f.va ? 'si' : 'no'}">${f.va ? 'Va' : 'Mejor no'}</span></div>
+      ${f.comentario ? `<p class="fine">${esc(f.comentario)}</p>` : ''}
+      ${f.va && f.texto ? capHTML(`hf-${i}`, f.texto) : ''}
+    </div></article>`).join('');
+    h += r.ideas.map((x, i) => `<article class="folder pastel idea c-${PASTELES[i % 4]}">
+      <h3 class="idea-t">${esc(x.titulo || 'Idea ' + (i + 1))}</h3>
+      ${x.que ? `<p>${esc(x.que)}</p>` : ''}
+      ${x.texto ? `<span class="label">Texto</span>${capHTML(`hi-${i}`, x.texto)}` : ''}
+      ${x.extra ? `<p class="fine">Sticker: ${esc(x.extra)}</p>` : ''}
+      ${x.porque ? `<p class="fine">${esc(x.porque)}</p>` : ''}
+    </article>`).join('');
+    h += '</div>';
+  }
+  out.innerHTML = h;
+}
+
+function renderWa() {
+  const st = S.wa, out = $('#w-out');
+  $('#w-go').disabled = st.running;
+  $('#w-go').textContent = st.frases ? 'Proponeme otras' : 'Proponeme frases';
+  if (st.running) { out.innerHTML = thinkingHTML('wa', st.since, 'Pensando frases'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  if (st.frases) h += `<div class="caps${anim('wa')}">${st.frases.map((f, i) => capHTML(`wa-${i}`, f, true)).join('')}</div>`;
+  out.innerHTML = h;
+}
+
+function renderBio() {
+  const st = S.bio, out = $('#b-out');
+  $('#b-tono').innerHTML = chipsHTML(TONOS_BIO, st.tono, 'btono');
+  $('#b-go').disabled = st.running;
+  $('#b-go').textContent = st.result ? 'Armame otras' : 'Armame opciones';
+  if (st.running) { out.innerHTML = thinkingHTML('bio', st.since, 'Armando tu estado'); return; }
+  let h = st.error ? `<p class="error" role="alert">${esc(st.error)}</p>` : '';
+  const r = st.result;
+  if (r) {
+    h += '<div class="result' + anim('bio') + '">';
+    if (r.estados.length) h += `<div class="ideas">${r.estados.map((x, i) => `<article class="folder pastel idea c-${PASTELES[i % 4]}">
+      <span class="label">${esc(x.enfoque || 'Opción ' + (i + 1))}</span>
+      ${capHTML('bio-' + i, x.texto, true)}
+      ${x.porque ? `<p class="fine">${esc(x.porque)}</p>` : ''}
+    </article>`).join('')}</div>`;
+    if (r.prompts.length) h += `<div class="props"><span class="label">Respuestas para prompts de ${esc(r.app)}</span>${r.prompts.map((p, i) => `<div class="prop"><span class="prop-d">${esc(p.prompt)}</span><p id="bp-${i}">${esc(p.respuesta)}</p><button class="btn small" data-act="copiar" data-arg="bp-${i}">Copiar</button></div>`).join('')}</div>`;
+    h += '</div>';
+  }
+  out.innerHTML = h;
+}
+
+boot();
+})();
+</script>
+
+</body></html>

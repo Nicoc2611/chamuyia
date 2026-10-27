@@ -1,0 +1,15 @@
+{
+  "name": "ChamuyIA",
+  "short_name": "ChamuyIA",
+  "description": "Tu fichero de chamuyo",
+  "lang": "es-AR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#E7E3DA",
+  "theme_color": "#E7E3DA",
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

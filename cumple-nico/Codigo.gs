@@ -4,34 +4,47 @@
  * Va entero en Código.gs, reemplazando todo lo que había.
  * La primera vez, elegí la función "configurar" arriba y tocá Ejecutar.
  *
- * Lo que cambia seguido (fecha, lugar, precio, CVU o alias, titular) se edita
+ * Lo que cambia seguido (fecha, lugar, precios, CVU o alias, titular) se edita
  * en la pestaña "Invitación" de la planilla, no acá.
+ *
+ * Mercado Pago: el Access Token va en Configuración del proyecto →
+ * Propiedades del script, con el nombre MP_ACCESS_TOKEN. Nunca en este código.
  */
 
 const PLANILLA_ID = '1IXz1OIY2vBBwrMLt_LnP3XVAYnqfZOMvmAvJqPYM3p4';
 const PESTANA_DATOS = 'Invitación';
-
+const PRECIO = 'Precio por persona';
+const PRECIO_MP = 'Precio con Mercado Pago';
 const CUENTA = 'Alias o CBU/CVU';
-// $400.000 de alquiler entre 80 personas
+
+// $400.000 de alquiler entre 80 personas = $5.000. Con Mercado Pago se suma la
+// comisión (6,29% + IVA si la plata se acredita al instante) para que igual te lleguen $5.000.
 const DATOS_INICIALES = [
   ['Fecha y hora', 'Viernes 4 de diciembre · 23 hs'],
   ['Lugar', 'A confirmar'],
-  ['Precio por persona', 5000],
-  [CUENTA, '0000003100021756068490'],
+  [PRECIO, 5000],
+  [PRECIO_MP, 5450],
+  [CUENTA, ''],
   ['Titular de la cuenta', ''],
 ];
 
 const ENCABEZADOS = [
   'Fecha', 'ID', 'Nombre', 'Respuesta', 'Lleva', 'Clave (no tocar)',
-  'Pagó', 'Monto', 'Fecha pago', 'Clave pago (no tocar)',
+  'Pagó', 'Monto', 'Fecha pago', 'Clave pago (no tocar)', 'Código (no tocar)',
 ];
 const ETIQUETAS = { si: 'Va', quizas: 'Quizás', no: 'No va' };
+const AVISO = 'Avisó que transfirió';
+const PAGO_MP = 'Pagó por Mercado Pago';
+
+const MP_API = 'https://api.mercadopago.com';
+const MP_REF = 'cumple-nico:';
 
 // ---------- página ----------
 
 function doGet() {
-  const datos = JSON.stringify(leerDatos_()).replace(/</g, '\\u003c');
-  const html = PAGINA.replace('__DATOS__', function () { return datos; });
+  const datos = leerDatos_();
+  const json = JSON.stringify(datos).replace(/</g, '\\u003c');
+  const html = PAGINA.replace('__DATOS__', function () { return json; });
   return HtmlService.createHtmlOutput(html)
     .setTitle('Cumple Nico')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -39,6 +52,8 @@ function doGet() {
 
 // ---------- funciones que llama la invitación ----------
 
+// Cada invitado recibe un código propio al confirmar. Sin ese código nadie
+// puede ver la respuesta de otro: lo que contestó cada uno lo ves solo vos.
 function responder(nombre, respuesta) {
   nombre = limpiarNombre_(nombre);
   if (!ETIQUETAS[respuesta]) throw new Error('Elegí si venís o no.');
@@ -52,75 +67,194 @@ function responder(nombre, respuesta) {
     if (fila) {
       sh.getRange(fila, 1, 1, 4).setValues([[new Date(t), id, nombre, ETIQUETAS[respuesta]]]);
       sh.getRange(fila, 6).setValue(clave);
+      if (!String(sh.getRange(fila, 11).getValue())) sh.getRange(fila, 11).setValue(nuevoCodigo_());
     } else {
-      sh.appendRow([new Date(t), id, nombre, ETIQUETAS[respuesta], '', clave]);
+      sh.appendRow([new Date(t), id, nombre, ETIQUETAS[respuesta], '', clave, '', '', '', '', nuevoCodigo_()]);
     }
   });
-  return estado(nombre);
+  return estadoPorId_(id, nombre);
 }
 
-function registrarPago(nombre, monto) {
+function estado(nombre, codigo) {
+  const id = idPara_(limpiarNombre_(nombre));
+  return delInvitado_(estadoPorId_(id, nombre), codigo);
+}
+
+function registrarPago(nombre, codigo, monto) {
   nombre = limpiarNombre_(nombre);
   const id = idPara_(nombre);
+  delInvitado_(estadoPorId_(id, nombre), codigo, true);
   monto = parseInt(String(monto == null ? '' : monto).replace(/[^\d]/g, ''), 10);
   if (!(monto > 0 && monto <= 10000000)) throw new Error('Poné cuánto transferiste, solo el número.');
   const t = Date.now();
   const clave = ['PAGO', id, t, monto, b64_(nombre)].join('~');
   conLock_(function () {
     const sh = hojaRespuestas_();
+    const fila = buscarFila_(sh, id);
+    if (String(sh.getRange(fila, 7).getValue()) === PAGO_MP) throw new Error('Tu pago por Mercado Pago ya está registrado.');
+    sh.getRange(fila, 7, 1, 4).setValues([[AVISO, monto, new Date(t), clave]]);
+    sh.getRange(fila, 8).setNumberFormat('"$"#,##0');
+  });
+  return estadoPorId_(id, nombre);
+}
+
+function linkDePago(nombre, codigo) {
+  nombre = limpiarNombre_(nombre);
+  const id = idPara_(nombre);
+  delInvitado_(estadoPorId_(id, nombre), codigo, true);
+  const d = leerDatos_();
+  if (!d.mp) throw new Error('El pago con Mercado Pago no está activado. Transferí al CVU.');
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty('pend:' + id, String(Date.now()));
+  const guardado = props.getProperty('link:' + id + ':' + d.precioMp);
+  if (guardado) return guardado;
+  const pref = mp_('post', '/checkout/preferences', {
+    items: [{ id: 'cumple-nico', title: 'Cumple Nico: tu parte del alquiler', quantity: 1, currency_id: 'ARS', unit_price: d.precioMp }],
+    external_reference: MP_REF + id,
+    metadata: { invitado: nombre },
+    binary_mode: true, // aprobado o rechazado al momento, sin pagos en efectivo que quedan pendientes
+    statement_descriptor: 'CUMPLE NICO',
+  });
+  if (!pref.init_point) throw new Error('Mercado Pago no devolvió el link de pago. Probá de nuevo.');
+  props.setProperty('link:' + id + ':' + d.precioMp, pref.init_point);
+  return pref.init_point;
+}
+
+// La invitación la llama cuando el invitado vuelve de Mercado Pago a la pestaña.
+function comprobarPago(nombre, codigo) {
+  nombre = limpiarNombre_(nombre);
+  const id = idPara_(nombre);
+  delInvitado_(estadoPorId_(id, nombre), codigo, true);
+  if (tokenMp_() && actualizarPagoMp_(id)) PropertiesService.getScriptProperties().deleteProperty('pend:' + id);
+  return estadoPorId_(id, nombre);
+}
+
+// ---------- Mercado Pago ----------
+
+// Corre sola cada 10 minutos (la programa "configurar"): busca los pagos aprobados
+// de quienes abrieron el link de pago y los marca en la planilla.
+function revisarPagos() {
+  if (!tokenMp_()) return;
+  const props = PropertiesService.getScriptProperties();
+  const todas = props.getProperties();
+  Object.keys(todas).forEach(function (k) {
+    if (k.indexOf('pend:') !== 0) return;
+    const id = k.slice(5);
+    try {
+      if (actualizarPagoMp_(id) || Date.now() - Number(todas[k]) > 45 * 864e5) props.deleteProperty(k);
+    } catch (err) {
+      console.warn('No pude revisar el pago de ' + id + ': ' + err.message);
+    }
+  });
+}
+
+function actualizarPagoMp_(id) {
+  const ref = MP_REF + id;
+  const res = mp_('get', '/v1/payments/search?sort=date_created&criteria=desc&limit=50&external_reference=' + encodeURIComponent(ref));
+  const ok = (res.results || []).filter(function (p) { return p.status === 'approved' && p.external_reference === ref; });
+  if (!ok.length) return false;
+  let bruto = 0;
+  let neto = 0;
+  ok.forEach(function (p) {
+    const monto = Number(p.transaction_amount) || 0;
+    const llega = p.transaction_details ? Number(p.transaction_details.net_received_amount) : 0;
+    bruto += monto;
+    neto += llega > 0 ? llega : monto;
+  });
+  const nombre = (ok[0].metadata && ok[0].metadata.invitado) || '';
+  marcarPagoMp_(id, nombre, Math.round(bruto), Math.round(neto), new Date(ok[0].date_approved || ok[0].date_created || Date.now()));
+  return true;
+}
+
+function marcarPagoMp_(id, nombre, bruto, neto, fecha) {
+  conLock_(function () {
+    const sh = hojaRespuestas_();
     asegurarEncabezados_(sh);
     let fila = buscarFila_(sh, id);
     if (!fila) {
-      sh.appendRow([new Date(t), id, nombre, ETIQUETAS.si, '', ['RSVP', id, 'si', t, '', b64_(nombre)].join('~')]);
+      nombre = String(nombre || '').replace(/^[\s=+\-@]+/, '').slice(0, 60);
+      if (!nombre) return;
+      sh.appendRow([fecha, id, nombre, ETIQUETAS.si, '', ['RSVP', id, 'si', fecha.getTime(), '', b64_(nombre)].join('~'), '', '', '', '', nuevoCodigo_()]);
       fila = sh.getLastRow();
     }
-    sh.getRange(fila, 7, 1, 4).setValues([['Avisó que transfirió', monto, new Date(t), clave]]);
+    const actual = sh.getRange(fila, 7, 1, 2).getValues()[0];
+    if (String(actual[0]) === PAGO_MP && Number(actual[1]) === bruto) return;
+    const quien = String(sh.getRange(fila, 3).getValue() || nombre);
+    const clave = ['PAGOMP', id, fecha.getTime(), bruto, b64_(quien), neto].join('~');
+    sh.getRange(fila, 7, 1, 4).setValues([[PAGO_MP, bruto, fecha, clave]]);
     sh.getRange(fila, 8).setNumberFormat('"$"#,##0');
   });
-  return estado(nombre);
 }
 
-function estado(nombre) {
-  nombre = limpiarNombre_(nombre);
-  const id = idPara_(nombre);
-  const sh = hojaRespuestas_();
-  const fila = buscarFila_(sh, id);
-  if (!fila) return { id: id, nombre: nombre, respuesta: '', monto: 0 };
-  const v = sh.getRange(fila, 1, 1, ENCABEZADOS.length).getValues()[0];
-  const m = String(v[5]).match(/^RSVP~[^~]*~(si|quizas|no)~/);
-  return {
-    id: id,
-    nombre: String(v[2] || nombre),
-    respuesta: m ? m[1] : '',
-    monto: Number(v[7]) || 0,
-  };
+function mp_(metodo, ruta, cuerpo) {
+  const token = tokenMp_();
+  if (!token) throw new Error('Falta el Access Token de Mercado Pago.');
+  const opciones = { method: metodo, headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true };
+  if (cuerpo) {
+    opciones.contentType = 'application/json';
+    opciones.payload = JSON.stringify(cuerpo);
+  }
+  const r = UrlFetchApp.fetch(MP_API + ruta, opciones);
+  const texto = r.getContentText();
+  let datos = {};
+  try { datos = texto ? JSON.parse(texto) : {}; } catch (err) { datos = {}; }
+  if (r.getResponseCode() >= 300) {
+    throw new Error('Mercado Pago respondió ' + r.getResponseCode() + (datos.message ? ': ' + datos.message : ''));
+  }
+  return datos;
 }
 
-// ---------- configuración (se corre una vez desde el editor) ----------
+function tokenMp_() {
+  return String(PropertiesService.getScriptProperties().getProperty('MP_ACCESS_TOKEN') || '').trim();
+}
+
+// ---------- configuración (se corre desde el editor) ----------
 
 function configurar() {
   const ss = planilla_();
   asegurarEncabezados_(ss.getSheets()[0]);
+
   let hoja = ss.getSheetByName(PESTANA_DATOS);
-  if (!hoja) {
-    hoja = ss.insertSheet(PESTANA_DATOS, ss.getNumSheets());
-    // La celda del CBU va como texto: si no, Sheets lo toma como número y le saca los ceros.
-    const filaCuenta = DATOS_INICIALES.findIndex(function (r) { return r[0] === CUENTA; }) + 1;
-    hoja.getRange(filaCuenta, 2).setNumberFormat('@');
-    hoja.getRange(1, 1, DATOS_INICIALES.length, 2).setValues(DATOS_INICIALES);
-    // Totales de lo que avisaron los invitados (lo confirmado lo ves en tu página del cumple)
+  if (!hoja) hoja = ss.insertSheet(PESTANA_DATOS, ss.getNumSheets());
+  // Agrega las filas que falten, sin tocar lo que ya completaste
+  const etiquetas = hoja.getLastRow() ? hoja.getRange(1, 1, hoja.getLastRow(), 1).getDisplayValues().map(function (r) { return normalizar_(r[0]); }) : [];
+  DATOS_INICIALES.forEach(function (fila) {
+    if (etiquetas.indexOf(normalizar_(fila[0])) >= 0) return;
+    const n = hoja.getLastRow() + 1;
+    // El CBU va como texto: si no, Sheets lo toma como número y le saca los ceros.
+    if (fila[0] === CUENTA) hoja.getRange(n, 2).setNumberFormat('@');
+    hoja.getRange(n, 1, 1, 2).setValues([fila]);
+    etiquetas.push(normalizar_(fila[0]));
+  });
+  if (etiquetas.indexOf(normalizar_('Plata que avisaron o pagaron')) < 0) {
     const resp = "'" + ss.getSheets()[0].getName().replace(/'/g, "''") + "'";
-    const fila = DATOS_INICIALES.length + 2;
-    hoja.getRange(fila, 1, 2, 2).setValues([
-      ['Plata que avisaron', '=SUM(' + resp + '!H2:H)'],
-      ['Personas que avisaron', '=COUNT(' + resp + '!H2:H)'],
+    const n = hoja.getLastRow() + 2;
+    hoja.getRange(n, 1, 2, 2).setValues([
+      ['Plata que avisaron o pagaron', '=SUM(' + resp + '!H2:H)'],
+      ['Personas que avisaron o pagaron', '=COUNT(' + resp + '!H2:H)'],
     ]);
-    hoja.getRange(fila, 2).setNumberFormat('"$"#,##0');
-    hoja.getRange(1, 1, fila + 1, 1).setFontWeight('bold');
-    hoja.setColumnWidth(1, 200);
-    hoja.setColumnWidth(2, 320);
+    hoja.getRange(n, 2).setNumberFormat('"$"#,##0');
   }
-  return 'Listo. Revisá precio, CVU y titular en la pestaña "' + PESTANA_DATOS + '".';
+  hoja.getRange(1, 1, hoja.getLastRow(), 1).setFontWeight('bold');
+  hoja.setColumnWidth(1, 220);
+  hoja.setColumnWidth(2, 320);
+
+  if (!ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'revisarPagos'; })) {
+    ScriptApp.newTrigger('revisarPagos').timeBased().everyMinutes(10).create();
+  }
+
+  let mp = 'Mercado Pago: falta el Access Token (Configuración del proyecto → Propiedades del script → MP_ACCESS_TOKEN).';
+  if (tokenMp_()) {
+    try {
+      const yo = mp_('get', '/users/me');
+      mp = 'Mercado Pago conectado a la cuenta ' + (yo.nickname || yo.email || yo.id) + '.';
+    } catch (err) {
+      mp = 'Mercado Pago no aceptó el Access Token: ' + err.message;
+    }
+  }
+  const msg = 'Planilla lista. ' + mp;
+  console.log(msg);
+  return msg;
 }
 
 // ---------- ayudantes ----------
@@ -129,7 +263,7 @@ function planilla_() {
   return SpreadsheetApp.openById(PLANILLA_ID);
 }
 
-// Las respuestas van siempre en la primera pestaña: la página del cumple lee esa.
+// Las respuestas van siempre en la primera pestaña: tu página del cumple lee esa.
 function hojaRespuestas_() {
   return planilla_().getSheets()[0];
 }
@@ -155,19 +289,47 @@ function leerDatos_() {
     }
     return '';
   };
-  const iPrecio = fila('Precio por persona');
-  let precio = 0;
-  if (iPrecio >= 0) {
-    const crudo = crudos[iPrecio][1];
-    precio = typeof crudo === 'number' ? Math.round(crudo) : parseInt(String(crudo).replace(/[^\d]/g, ''), 10) || 0;
-  }
+  const numero = function (etiqueta) {
+    const i = fila(etiqueta);
+    if (i < 0) return 0;
+    const v = crudos[i][1];
+    const n = typeof v === 'number' ? Math.round(v) : parseInt(String(v).replace(/[^\d]/g, ''), 10);
+    return n > 0 ? n : 0;
+  };
+  const precio = numero(PRECIO);
+  const precioMp = numero(PRECIO_MP) || precio;
   return {
     fecha: texto('Fecha y hora') || DATOS_INICIALES[0][1],
     lugar: texto('Lugar'),
-    precio: precio > 0 ? precio : 0,
+    precio: precio,
+    precioMp: precioMp,
+    mp: !!tokenMp_() && precioMp > 0,
     alias: texto(CUENTA, 'Alias', 'CBU', 'CVU'),
     titular: texto('Titular de la cuenta'),
   };
+}
+
+function estadoPorId_(id, nombre) {
+  const sh = hojaRespuestas_();
+  const fila = buscarFila_(sh, id);
+  if (!fila) return { id: id, nombre: String(nombre || ''), respuesta: '', monto: 0, mp: false, codigo: '' };
+  const v = sh.getRange(fila, 1, 1, ENCABEZADOS.length).getValues()[0];
+  const m = String(v[5]).match(/^RSVP~[^~]*~(si|quizas|no)~/);
+  return {
+    id: id,
+    nombre: String(v[2] || nombre || ''),
+    respuesta: m ? m[1] : '',
+    monto: Number(v[7]) || 0,
+    mp: String(v[6]) === PAGO_MP,
+    codigo: String(v[10] || ''),
+  };
+}
+
+// Sin el código de esa persona no se muestra nada de su respuesta.
+function delInvitado_(est, codigo, obligatorio) {
+  if (est.codigo && String(codigo || '') === est.codigo) return est;
+  if (obligatorio) throw new Error('Primero confirmá tu asistencia arriba.');
+  return { id: est.id, nombre: est.nombre, respuesta: '', monto: 0, mp: false, codigo: '' };
 }
 
 function asegurarEncabezados_(sh) {
@@ -189,6 +351,10 @@ function conLock_(fn) {
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try { return fn(); } finally { lock.releaseLock(); }
+}
+
+function nuevoCodigo_() {
+  return Utilities.getUuid().replace(/-/g, '').slice(0, 16);
 }
 
 function limpiarNombre_(nombre) {
@@ -271,9 +437,11 @@ h1 .hl { color: var(--accent); background: linear-gradient(transparent 58%, var(
 .info dt { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
 .info dd { margin: 0; font-weight: 600; font-size: 18px; }
 .nota { margin: 0; color: var(--muted); }
+.chico { margin: 0; color: var(--muted); font-size: 14px; }
 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: grid; gap: 14px; }
 .card h2 { margin: 0; font-size: 20px; }
+.grupo { display: grid; gap: 12px; }
 form { display: grid; gap: 14px; }
 .lbl { font-size: 14px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; }
 .txt { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px 14px; font-size: 17px; }
@@ -281,10 +449,10 @@ form { display: grid; gap: 14px; }
 .opts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .opt { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 12px 6px; font-weight: 700; }
 .opt[aria-checked="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-.btn { border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; border-radius: 12px; padding: 14px 18px; }
-.btn:disabled { opacity: .6; cursor: progress; }
+.btn { border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 17px; border-radius: 12px; padding: 14px 18px; display: block; text-align: center; text-decoration: none; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .6; cursor: progress; }
 .btn.sec { background: var(--surface-2); color: var(--fg); font-size: 15px; padding: 12px 14px; }
-.link { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; justify-self: start; }
+.link { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; justify-self: start; text-align: left; }
 .err { margin: 0; color: var(--err); font-weight: 600; font-size: 15px; }
 .hecho { margin: 0; font-size: 18px; font-weight: 600; }
 
@@ -298,6 +466,8 @@ form { display: grid; gap: 14px; }
 .peso { display: flex; align-items: center; gap: 8px; }
 .peso span { font-weight: 700; font-size: 20px; color: var(--muted); }
 .gracias { background: var(--ok-bg); color: var(--ok); border-radius: 12px; padding: 12px 14px; margin: 0; font-weight: 600; }
+.estado-mp { background: var(--surface-2); border-radius: 12px; padding: 12px 14px; margin: 0; font-weight: 600; }
+.estado-mp.mal { color: var(--err); }
 
 .toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 15px; }
@@ -340,26 +510,37 @@ form { display: grid; gap: 14px; }
   <section class="card" id="pago" aria-labelledby="t-pago" hidden>
     <h2 id="t-pago">Tu parte del alquiler</h2>
     <p id="pago-pendiente" class="nota" hidden>Todavía estoy cerrando el alquiler. En unos días te paso cuánto sale; volvé a este mismo link para pagar.</p>
-    <div id="pago-listo" style="display:grid;gap:14px" hidden>
+    <div id="pago-listo" class="grupo" hidden>
       <p class="monto"><span id="p-precio"></span> <small>por persona</small></p>
-      <div>
-        <label class="lbl" for="p-alias" id="l-alias">Transferí a este alias</label>
-        <div class="alias">
-          <input class="txt" id="p-alias" readonly>
-          <button type="button" class="btn sec" id="copiar">Copiar</button>
-        </div>
-      </div>
-      <p class="titular" id="p-titular" hidden></p>
+      <p class="estado-mp" id="estado-mp" role="status" hidden></p>
       <p class="gracias" id="m-pago" hidden></p>
-      <button type="button" class="link" id="corregir" hidden>Me equivoqué con el monto</button>
-      <form id="f-pago" novalidate>
+
+      <div id="mp" class="grupo" hidden>
+        <a class="btn" id="b-mp" href="#" target="_blank" rel="noopener" aria-disabled="true">Preparando el pago…</a>
+        <button type="button" class="btn sec" id="b-revisar" hidden>Ya pagué, revisar</button>
+        <p class="chico" id="mp-nota"></p>
+        <button type="button" class="link" id="ver-cvu" hidden></button>
+      </div>
+
+      <div id="transfer" class="grupo" hidden>
         <div>
-          <label class="lbl" for="monto">Cuando transfieras, avisame cuánto mandaste</label>
-          <div class="peso"><span aria-hidden="true">$</span><input class="txt" id="monto" inputmode="numeric" autocomplete="off"></div>
+          <label class="lbl" for="p-alias" id="l-alias">Transferí a este alias</label>
+          <div class="alias">
+            <input class="txt" id="p-alias" readonly>
+            <button type="button" class="btn sec" id="copiar">Copiar</button>
+          </div>
         </div>
-        <button type="submit" class="btn" id="b-pago">Ya transferí</button>
-        <p class="err" id="e-pago" role="alert" hidden></p>
-      </form>
+        <p class="titular" id="p-titular" hidden></p>
+        <button type="button" class="link" id="corregir" hidden>Me equivoqué con el monto</button>
+        <form id="f-pago" novalidate>
+          <div>
+            <label class="lbl" for="monto">Cuando transfieras, avisame cuánto mandaste</label>
+            <div class="peso"><span aria-hidden="true">$</span><input class="txt" id="monto" inputmode="numeric" autocomplete="off"></div>
+          </div>
+          <button type="submit" class="btn" id="b-pago">Ya transferí</button>
+          <p class="err" id="e-pago" role="alert" hidden></p>
+        </form>
+      </div>
     </div>
   </section>
 </main>
@@ -369,12 +550,16 @@ form { display: grid; gap: 14px; }
 (function () {
   var D = __DATOS__;
   var $ = function (id) { return document.getElementById(id); };
-  var yo = { nombre: '', respuesta: '', monto: 0 };
+  var yo = { nombre: '', respuesta: '', monto: 0, mp: false, codigo: '' };
   var elegida = '';
+  var verCvu = false;
+  var linkMp = '';
+  var pagando = false;
+  var ultimaRevision = 0;
 
   function plata(n) { return '$' + Number(n).toLocaleString('es-AR'); }
-  function guardar(nombre) { try { localStorage.setItem('cumple-nico-nombre', nombre); } catch (e) {} }
-  function recordado() { try { return localStorage.getItem('cumple-nico-nombre') || ''; } catch (e) { return ''; } }
+  function guardar(p) { try { localStorage.setItem('cumple-nico', JSON.stringify({ nombre: p.nombre, codigo: p.codigo })); } catch (e) {} }
+  function recordado() { try { return JSON.parse(localStorage.getItem('cumple-nico') || 'null'); } catch (e) { return null; } }
   function llamar(fn, args) {
     return new Promise(function (ok, mal) {
       var r = google.script.run.withSuccessHandler(ok).withFailureHandler(mal);
@@ -394,10 +579,11 @@ form { display: grid; gap: 14px; }
   // Un CBU o CVU son 22 números; los CVU (Mercado Pago, Ualá...) empiezan con 000000
   var cuenta = /^[\\d\\s-]+$/.test(D.alias) ? D.alias.replace(/[\\s-]/g, '') : D.alias;
   var tipo = /^\\d{22}$/.test(cuenta) ? (cuenta.indexOf('000000') === 0 ? 'CVU' : 'CBU') : 'alias';
+  var hayCuenta = !!cuenta;
+  var cobrar = D.precio > 0 && (D.mp || hayCuenta);
 
   $('fecha').textContent = D.fecha;
   $('lugar').textContent = D.lugar || 'A confirmar';
-  var cobrar = D.precio > 0 && D.alias;
   $('nota').textContent = cobrar
     ? 'Alquilo un lugar y lo pagamos entre todos: sale ' + plata(D.precio) + ' por persona.'
     : 'Alquilo un lugar y lo pagamos entre todos. En unos días paso cuánto sale por persona.';
@@ -425,21 +611,78 @@ form { display: grid; gap: 14px; }
     $('pago-listo').hidden = !cobrar;
     if (!cobrar) return;
     $('p-precio').textContent = plata(D.precio);
-    $('l-alias').textContent = 'Transferí a este ' + tipo;
+    $('l-alias').textContent = 'Transferí ' + plata(D.precio) + ' a este ' + tipo;
     $('p-alias').value = cuenta;
     $('p-titular').hidden = !D.titular;
     $('p-titular').innerHTML = '';
     if (D.titular) { $('p-titular').append('A nombre de '); var b = document.createElement('b'); b.textContent = D.titular; $('p-titular').append(b); }
+    var extra = D.precioMp - D.precio;
+    $('mp-nota').textContent = (extra > 0 ? 'Incluye ' + plata(extra) + ' de comisión de Mercado Pago. ' : '') +
+      'Se confirma solo cuando Mercado Pago aprueba el pago.';
+    $('ver-cvu').textContent = 'Prefiero transferir ' + (extra > 0 ? plata(D.precio) + ' ' : '') + 'al ' + tipo + (extra > 0 ? ', sin comisión' : '');
+    $('ver-cvu').hidden = !hayCuenta;
     mostrarPago(false);
   }
+
   function mostrarPago(corrigiendo) {
-    var avisado = yo.monto > 0 && !corrigiendo;
-    $('m-pago').hidden = !avisado;
+    var pagoMp = yo.mp && yo.monto > 0;
+    var avisado = !pagoMp && yo.monto > 0 && !corrigiendo;
+    $('m-pago').hidden = !(pagoMp || avisado);
+    if (pagoMp) $('m-pago').textContent = 'Tu pago de ' + plata(yo.monto) + ' entró por Mercado Pago. ¡Gracias!';
+    else if (avisado) $('m-pago').textContent = 'Me avisaste que transferiste ' + plata(yo.monto) + '. ¡Gracias!';
+    var conMp = D.mp && !pagoMp && !avisado && !verCvu && !corrigiendo;
+    $('mp').hidden = !conMp;
+    $('transfer').hidden = pagoMp || !hayCuenta || (conMp && !verCvu);
     $('corregir').hidden = !avisado;
     $('f-pago').hidden = avisado;
-    if (avisado) $('m-pago').textContent = 'Me avisaste que transferiste ' + plata(yo.monto) + '. ¡Gracias!';
-    else $('monto').value = String(yo.monto || D.precio).replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+    if (!avisado) $('monto').value = String((!yo.mp && yo.monto) || D.precio).replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');
+    if (conMp) prepararMp();
   }
+
+  function prepararMp() {
+    var a = $('b-mp');
+    if (linkMp) return;
+    a.setAttribute('aria-disabled', 'true'); a.textContent = 'Preparando el pago…';
+    llamar('linkDePago', [yo.nombre, yo.codigo]).then(function (url) {
+      linkMp = url; a.href = url; a.setAttribute('aria-disabled', 'false');
+      a.textContent = 'Pagar ' + plata(D.precioMp) + ' con Mercado Pago';
+    }).catch(function (x) {
+      $('mp').hidden = true;
+      $('transfer').hidden = !hayCuenta;
+      avisoMp(mensajeError(x), true);
+    });
+  }
+  $('b-mp').addEventListener('click', function (e) {
+    if (!linkMp) { e.preventDefault(); return; }
+    pagando = true;
+    $('b-revisar').hidden = false;
+    avisoMp('Cuando termines en Mercado Pago, volvé a esta pestaña: el pago se confirma solo.', false);
+  });
+  $('b-revisar').addEventListener('click', function () { revisar(true); });
+
+  // Le pregunta a Mercado Pago si el pago de esta persona ya está aprobado
+  function revisar(aMano) {
+    if (!yo.codigo || yo.mp || Date.now() - ultimaRevision < 8000) return;
+    ultimaRevision = Date.now();
+    var b = $('b-revisar'); b.disabled = true; b.textContent = 'Revisando…';
+    llamar('comprobarPago', [yo.nombre, yo.codigo]).then(function (r) {
+      if (r && r.mp) { yo = r; pagando = false; avisoMp('', false); mostrarPago(false); }
+      else if (aMano) avisoMp('Todavía no veo el pago. Si ya pagaste, puede tardar unos minutos: se confirma solo.', false);
+    }).catch(function (x) {
+      if (aMano) avisoMp(mensajeError(x), true);
+    }).then(function () { b.disabled = false; b.textContent = 'Ya pagué, revisar'; });
+  }
+  $('ver-cvu').addEventListener('click', function () { verCvu = true; mostrarPago(false); $('p-alias').focus(); });
+
+  function avisoMp(msg, mal) {
+    var el = $('estado-mp');
+    el.hidden = !msg; el.textContent = msg || ''; el.classList.toggle('mal', !!mal);
+  }
+
+  // Al volver a esta pestaña después de pagar, se fija si el pago ya entró
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && pagando) revisar(false);
+  });
 
   $('f-rsvp').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -449,21 +692,22 @@ form { display: grid; gap: 14px; }
     if (!elegida) { err.textContent = 'Elegí si venís, quizás o no.'; err.hidden = false; return; }
     var b = $('b-rsvp'); b.disabled = true; b.textContent = 'Guardando…';
     llamar('responder', [nombre, elegida]).then(function (r) {
-      yo = r; guardar(nombre); mostrarListo();
+      yo = r; linkMp = ''; verCvu = false; guardar(r); mostrarListo();
     }).catch(function (x) {
       err.textContent = mensajeError(x); err.hidden = false;
     }).then(function () { b.disabled = false; b.textContent = 'Confirmar'; });
   });
 
   $('cambiar').addEventListener('click', function () {
-    $('nombre').value = yo.nombre; elegir(yo.respuesta);
+    $('nombre').value = yo.nombre; elegir(yo.respuesta); avisoMp('', false);
     $('paso-listo').hidden = true; $('pago').hidden = true; $('paso-rsvp').hidden = false;
   });
   $('corregir').addEventListener('click', function () { mostrarPago(true); $('monto').focus(); });
 
   $('copiar').addEventListener('click', function () {
     var inp = $('p-alias');
-    var listo = function () { toast((tipo === 'alias' ? 'Alias' : tipo) + ' copiado'); };
+    var nombreDato = tipo === 'alias' ? 'Alias' : tipo;
+    var listo = function () { toast(nombreDato + ' copiado'); };
     var aMano = function () {
       inp.focus(); inp.select();
       try { if (document.execCommand('copy')) { listo(); return; } } catch (e) {}
@@ -481,17 +725,18 @@ form { display: grid; gap: 14px; }
     var monto = $('monto').value.replace(/[^\\d]/g, '');
     if (!monto || Number(monto) <= 0) { err.textContent = 'Poné cuánto transferiste, solo el número.'; err.hidden = false; return; }
     var b = $('b-pago'); b.disabled = true; b.textContent = 'Avisando…';
-    llamar('registrarPago', [yo.nombre, monto]).then(function (r) {
-      yo = r; mostrarPago(false);
+    llamar('registrarPago', [yo.nombre, yo.codigo, monto]).then(function (r) {
+      yo = r; verCvu = false; mostrarPago(false);
     }).catch(function (x) {
       err.textContent = mensajeError(x); err.hidden = false;
     }).then(function () { b.disabled = false; b.textContent = 'Ya transferí'; });
   });
 
-  var nombreGuardado = recordado();
-  if (nombreGuardado) {
-    $('nombre').value = nombreGuardado;
-    llamar('estado', [nombreGuardado]).then(function (r) {
+  // Alguien que ya confirmó desde este celu: se muestra su respuesta
+  var guardado = recordado();
+  if (guardado && guardado.nombre) {
+    $('nombre').value = guardado.nombre;
+    llamar('estado', [guardado.nombre, guardado.codigo]).then(function (r) {
       if (r && r.respuesta) { yo = r; mostrarListo(); }
     }).catch(function () {});
   }

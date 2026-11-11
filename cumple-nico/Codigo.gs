@@ -4,18 +4,20 @@
  * Va entero en Código.gs, reemplazando todo lo que había.
  * La primera vez, elegí la función "configurar" arriba y tocá Ejecutar.
  *
- * Lo que cambia seguido (fecha, lugar, precio, alias, titular) se edita
+ * Lo que cambia seguido (fecha, lugar, precio, CVU o alias, titular) se edita
  * en la pestaña "Invitación" de la planilla, no acá.
  */
 
 const PLANILLA_ID = '1IXz1OIY2vBBwrMLt_LnP3XVAYnqfZOMvmAvJqPYM3p4';
 const PESTANA_DATOS = 'Invitación';
 
+const CUENTA = 'Alias o CBU/CVU';
+// $400.000 de alquiler entre 80 personas
 const DATOS_INICIALES = [
   ['Fecha y hora', 'Viernes 4 de diciembre · 23 hs'],
   ['Lugar', 'A confirmar'],
-  ['Precio por persona', ''],
-  ['Alias', ''],
+  ['Precio por persona', 5000],
+  [CUENTA, '0000003100021756068490'],
   ['Titular de la cuenta', ''],
 ];
 
@@ -102,12 +104,23 @@ function configurar() {
   let hoja = ss.getSheetByName(PESTANA_DATOS);
   if (!hoja) {
     hoja = ss.insertSheet(PESTANA_DATOS, ss.getNumSheets());
+    // La celda del CBU va como texto: si no, Sheets lo toma como número y le saca los ceros.
+    const filaCuenta = DATOS_INICIALES.findIndex(function (r) { return r[0] === CUENTA; }) + 1;
+    hoja.getRange(filaCuenta, 2).setNumberFormat('@');
     hoja.getRange(1, 1, DATOS_INICIALES.length, 2).setValues(DATOS_INICIALES);
-    hoja.getRange(1, 1, DATOS_INICIALES.length, 1).setFontWeight('bold');
-    hoja.setColumnWidth(1, 180);
+    // Totales de lo que avisaron los invitados (lo confirmado lo ves en tu página del cumple)
+    const resp = "'" + ss.getSheets()[0].getName().replace(/'/g, "''") + "'";
+    const fila = DATOS_INICIALES.length + 2;
+    hoja.getRange(fila, 1, 2, 2).setValues([
+      ['Plata que avisaron', '=SUM(' + resp + '!H2:H)'],
+      ['Personas que avisaron', '=COUNT(' + resp + '!H2:H)'],
+    ]);
+    hoja.getRange(fila, 2).setNumberFormat('"$"#,##0');
+    hoja.getRange(1, 1, fila + 1, 1).setFontWeight('bold');
+    hoja.setColumnWidth(1, 200);
     hoja.setColumnWidth(2, 320);
   }
-  return 'Listo. Completá precio, alias y titular en la pestaña "' + PESTANA_DATOS + '".';
+  return 'Listo. Revisá precio, CVU y titular en la pestaña "' + PESTANA_DATOS + '".';
 }
 
 // ---------- ayudantes ----------
@@ -135,9 +148,12 @@ function leerDatos_() {
     for (let i = 0; i < textos.length; i++) if (normalizar_(textos[i][0]) === e) return i;
     return -1;
   };
-  const texto = function (etiqueta) {
-    const i = fila(etiqueta);
-    return i < 0 ? '' : String(textos[i][1]).trim();
+  const texto = function () {
+    for (let k = 0; k < arguments.length; k++) {
+      const i = fila(arguments[k]);
+      if (i >= 0) return String(textos[i][1]).trim();
+    }
+    return '';
   };
   const iPrecio = fila('Precio por persona');
   let precio = 0;
@@ -149,7 +165,7 @@ function leerDatos_() {
     fecha: texto('Fecha y hora') || DATOS_INICIALES[0][1],
     lugar: texto('Lugar'),
     precio: precio > 0 ? precio : 0,
-    alias: texto('Alias'),
+    alias: texto(CUENTA, 'Alias', 'CBU', 'CVU'),
     titular: texto('Titular de la cuenta'),
   };
 }
@@ -274,8 +290,9 @@ form { display: grid; gap: 14px; }
 
 .monto { margin: 0; font-family: var(--font-display); font-size: 44px; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
 .monto small { font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--muted); }
-.alias { display: flex; gap: 8px; }
-.alias .txt { font-family: var(--font-mono); font-size: 17px; min-width: 0; flex: 1 1 auto; }
+.alias { display: flex; flex-wrap: wrap; gap: 8px; }
+.alias .txt { font-family: var(--font-mono); font-size: 17px; min-width: 0; flex: 1 1 240px; }
+.alias .btn { flex: 0 0 auto; }
 .titular { margin: 0; color: var(--muted); }
 .titular b { color: var(--fg); }
 .peso { display: flex; align-items: center; gap: 8px; }
@@ -326,7 +343,7 @@ form { display: grid; gap: 14px; }
     <div id="pago-listo" style="display:grid;gap:14px" hidden>
       <p class="monto"><span id="p-precio"></span> <small>por persona</small></p>
       <div>
-        <label class="lbl" for="p-alias">Transferí a este alias</label>
+        <label class="lbl" for="p-alias" id="l-alias">Transferí a este alias</label>
         <div class="alias">
           <input class="txt" id="p-alias" readonly>
           <button type="button" class="btn sec" id="copiar">Copiar</button>
@@ -374,6 +391,10 @@ form { display: grid; gap: 14px; }
     clearTimeout(tt); tt = setTimeout(function () { t.hidden = true; }, 2400);
   }
 
+  // Un CBU o CVU son 22 números; los CVU (Mercado Pago, Ualá...) empiezan con 000000
+  var cuenta = /^[\\d\\s-]+$/.test(D.alias) ? D.alias.replace(/[\\s-]/g, '') : D.alias;
+  var tipo = /^\\d{22}$/.test(cuenta) ? (cuenta.indexOf('000000') === 0 ? 'CVU' : 'CBU') : 'alias';
+
   $('fecha').textContent = D.fecha;
   $('lugar').textContent = D.lugar || 'A confirmar';
   var cobrar = D.precio > 0 && D.alias;
@@ -404,7 +425,8 @@ form { display: grid; gap: 14px; }
     $('pago-listo').hidden = !cobrar;
     if (!cobrar) return;
     $('p-precio').textContent = plata(D.precio);
-    $('p-alias').value = D.alias;
+    $('l-alias').textContent = 'Transferí a este ' + tipo;
+    $('p-alias').value = cuenta;
     $('p-titular').hidden = !D.titular;
     $('p-titular').innerHTML = '';
     if (D.titular) { $('p-titular').append('A nombre de '); var b = document.createElement('b'); b.textContent = D.titular; $('p-titular').append(b); }
@@ -441,14 +463,14 @@ form { display: grid; gap: 14px; }
 
   $('copiar').addEventListener('click', function () {
     var inp = $('p-alias');
-    var listo = function () { toast('Alias copiado'); };
+    var listo = function () { toast((tipo === 'alias' ? 'Alias' : tipo) + ' copiado'); };
     var aMano = function () {
       inp.focus(); inp.select();
       try { if (document.execCommand('copy')) { listo(); return; } } catch (e) {}
-      toast('Mantené apretado el alias para copiarlo');
+      toast('Mantené apretado el ' + tipo + ' para copiarlo');
     };
     try {
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(D.alias).then(listo, aMano);
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(cuenta).then(listo, aMano);
       else aMano();
     } catch (e) { aMano(); }
   });

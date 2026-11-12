@@ -17,13 +17,13 @@ const PRECIO = 'Precio por persona';
 const PRECIO_MP = 'Precio con Mercado Pago';
 const CUENTA = 'Alias o CBU/CVU';
 
-// $400.000 de alquiler entre 80 personas = $5.000. Con Mercado Pago se suma la
-// comisión (6,29% + IVA si la plata se acredita al instante) para que igual te lleguen $5.000.
+// $600.000 de alquiler entre 80 personas = $7.500. Con Mercado Pago se suma la
+// comisión (6,29% + IVA si la plata se acredita al instante) para que igual te lleguen $7.500.
 const DATOS_INICIALES = [
   ['Fecha y hora', 'Viernes 4 de diciembre · 23 hs'],
   ['Lugar', 'A confirmar'],
-  [PRECIO, 5000],
-  [PRECIO_MP, 5450],
+  [PRECIO, 7500],
+  [PRECIO_MP, 8150],
   [CUENTA, ''],
   ['Titular de la cuenta', ''],
 ];
